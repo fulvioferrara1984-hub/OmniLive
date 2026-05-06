@@ -1,0 +1,143 @@
+{
+  "entities": {
+    "Event": {
+      "title": "Broadcast Event",
+      "description": "A broadcast production event or POC.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "description": "Event title" },
+        "description": { "type": "string", "description": "Event details" },
+        "contacts": { "type": "string", "description": "Useful contacts" },
+        "sport": { "type": "string", "description": "Sport category" },
+        "venue": { "type": "string", "description": "Event location/stadium" },
+        "venueTimezone": { "type": "string", "description": "Timezone of the venue" },
+        "logs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "actor": { "type": "string", "enum": ["TGI", "Connectivity Provider", "Cliente", "Altro"] },
+              "message": { "type": "string" }
+            }
+          }
+        },
+        "status": { 
+          "type": "string", 
+          "enum": ["TBC", "Confirmed-In progress", "Confirmed-Ready for live", "Live", "Done"],
+          "description": "Production status"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Live Event", "POC"],
+          "description": "Event category"
+        },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "description": "User UID" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "status", "type", "startDate", "endDate", "createdBy"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "User profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      },
+      "required": ["uid", "email"]
+    },
+    "Machine": {
+      "title": "Machine",
+      "description": "A single hardware unit (Tracer, Integrator, or Renderer).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["Tracer", "Integrator", "Renderer"] },
+        "isAvailable": { "type": "boolean" },
+        "notes": { "type": "string" },
+        "linkedMachineIds": { "type": "array", "items": { "type": "string" } },
+        "matrix": { "type": "string", "enum": ["Matrix 1", "Matrix 2"] },
+        "resolution": { "type": "array", "items": { "type": "string", "enum": ["HD", "UHD"] } },
+        "instances": { "type": "number", "description": "Number of outputs/instances" },
+        "matrixInputPort": { "type": "number" },
+        "matrixOutputPort": { "type": "number" }
+      },
+      "required": ["name", "type", "isAvailable", "matrix", "resolution"]
+    },
+    "System": {
+      "title": "System",
+      "description": "A collection of machines forming a production system.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "signalNomenclature": { "type": "string", "enum": ["Acarpet/Carpet", "Atgi/Tgi"] },
+        "videoMatrix": { "type": "string" },
+        "machineIds": { "type": "array", "items": { "type": "string" } },
+        "isAvailable": { "type": "boolean" },
+        "resolution": { "type": "string", "enum": ["HD", "UHD"] }
+      },
+      "required": ["name", "signalNomenclature", "videoMatrix", "machineIds", "isAvailable", "resolution"]
+    },
+    "Infrastructure": {
+      "title": "Infrastructure",
+      "description": "Global settings for matrices and tielines.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tielines": {
+          "type": "object",
+          "properties": {
+            "m1ToM2": { "type": "number" },
+            "m2ToM1": { "type": "number" }
+          }
+        },
+        "matrixNames": {
+          "type": "object",
+          "properties": {
+            "m1": { "type": "string" },
+            "m2": { "type": "string" }
+          }
+        },
+        "splittingRules": {
+          "type": "object",
+          "properties": {
+            "startPort": { "type": "number" },
+            "endPort": { "type": "number" },
+            "matrix": { "type": "string", "enum": ["Matrix 1", "Matrix 2"] }
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/events/{eventId}": {
+      "schema": "Event",
+      "description": "Collection of broadcast events."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles."
+    },
+    "/machines/{machineId}": {
+      "schema": "Machine",
+      "description": "Inventory of hardware units."
+    },
+    "/systems/{systemId}": {
+      "schema": "System",
+      "description": "Configured production systems."
+    },
+    "/infrastructure/{infraId}": {
+      "schema": "Infrastructure",
+      "description": "Global infrastructure settings like tielines."
+    }
+  }
+}

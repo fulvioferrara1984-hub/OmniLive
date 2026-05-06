@@ -1,0 +1,158 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: events
+// Document ID: auto-generated
+// Fields:
+//   - title: string (required) - Event title
+//   - description: string (optional) - Event details
+//   - contacts: string (optional) - Useful contacts
+//   - logs: list (optional) - Project timeline logs
+//   - status: string (required, enum) - TBC, Confirmed-In Progress, Confirmed-Ready for Live, In Live, Done
+//   - type: string (required, enum) - Live Event, POC
+//   - startDate: string (required, ISO 8601) - Start date
+//   - endDate: string (required, ISO 8601) - End date
+//   - createdBy: string (required, UID) - User who created the event
+//   - createdAt: string (required, ISO 8601) - Creation timestamp
+//   - galleries: list (required) - List of gallery configurations
+//
+// Collection: users
+// Document ID: userId (UID)
+// Fields:
+//   - email: string (required) - User email
+//   - displayName: string (optional) - User display name
+//   - role: string (required, enum) - admin, user
+//
+// Collection: machines
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required)
+//   - type: string (required, enum: Tracer, Integrator, Renderer)
+//   - isAvailable: boolean (required)
+//   - matrix: string (required, enum: Matrix 1, Matrix 2)
+//
+// Collection: systems
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required)
+//   - signalNomenclature: string (required)
+//   - videoMatrix: string (required)
+//   - machineIds: list (required)
+//   - isAvailable: boolean (required)
+//
+// Collection: infrastructure
+// Document ID: auto-generated
+// Fields:
+//   - tielines: map (required)
+//   - matrixNames: map (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.createdBy;
+    }
+    
+    function isValidEvent(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             (!('contacts' in data) || (data.contacts is string && data.contacts.size() < 1000)) &&
+             (!('sport' in data) || (data.sport is string && data.sport.size() < 100)) &&
+             (!('venue' in data) || (data.venue is string && data.venue.size() < 200)) &&
+             (!('venueTimezone' in data) || (data.venueTimezone is string && data.venueTimezone.size() < 100)) &&
+             (!('logs' in data) || (data.logs is list && data.logs.size() < 100)) &&
+             (!('galleries' in data) || (data.galleries is list && data.galleries.size() < 20)) &&
+             data.status in ["TBC", "Confirmed-In progress", "Confirmed-Ready for live", "Live", "Done"] &&
+             data.type in ["Live Event", "POC"] &&
+             data.startDate is string && data.endDate is string;
+    }
+
+    function isEventCreator(data) {
+      return data.createdBy == request.auth.uid;
+    }
+
+    function isValidUser(data) {
+      return data.email is string && data.email.size() > 0 &&
+             data.role in ["admin", "production", "operator"];
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+              (request.auth.token.email == "supponor.isg@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidMachine(data) {
+      return data.name is string && data.name.size() > 0 &&
+             data.type in ["Tracer", "Integrator", "Renderer"] &&
+             data.isAvailable is bool &&
+             data.matrix in ["Matrix 1", "Matrix 2"] &&
+             data.resolution is list &&
+             (!('instances' in data) || data.instances is number) &&
+             (!('matrixInputPort' in data) || data.matrixInputPort is number) &&
+             (!('matrixOutputPort' in data) || data.matrixOutputPort is number);
+    }
+
+    function isValidSystem(data) {
+      return data.name is string && data.name.size() > 0 &&
+             data.signalNomenclature in ["Acarpet/Carpet", "Atgi/Tgi"] &&
+             data.videoMatrix in ["Matrix 1", "Matrix 2"] &&
+             data.machineIds is list &&
+             data.isAvailable is bool &&
+             data.resolution in ["HD", "UHD"];
+    }
+
+    function isValidInfrastructure(data) {
+      return data.tielines is map && data.matrixNames is map &&
+             (!('splittingRules' in data) || (data.splittingRules is map && data.splittingRules.matrix in ["Matrix 1", "Matrix 2"]));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidEvent(request.resource.data);
+      allow update: if isAuthenticated() && isValidEvent(request.resource.data) && (isEventCreator(request.resource.data) || isAdmin());
+      allow delete: if isAuthenticated() && (isDocOwner() || isAdmin());
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      // Allow user to create their own profile, OR admin to create any profile
+      allow create: if isAuthenticated() && (request.auth.uid == userId || isAdmin()) && isValidUser(request.resource.data);
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
+    }
+
+    match /machines/{machineId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /systems/{systemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /infrastructure/{infraId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}
