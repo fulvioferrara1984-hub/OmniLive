@@ -362,6 +362,7 @@ export const exportPDF = async (
 
     if (event.schedule && event.schedule.length > 0) {
       const scheduleBody = event.schedule.map(s => [
+        String(s.date || ''),
         String(s.time || ''),
         String(s.activity || ''),
         String(s.notes || '')
@@ -369,13 +370,17 @@ export const exportPDF = async (
       
       autoTable(doc, {
         startY: y,
-        head: [['Time', 'Activity', 'Notes']],
+        head: [['Date', 'Time', 'Activity', 'Notes']],
         body: scheduleBody,
         theme: 'striped',
         styles: { font: FONT_FAMILY },
         headStyles: { fillColor: PRIMARY, textColor: WHITE, fontSize: 9, fontStyle: 'bold' },
         bodyStyles: { fontSize: 8 },
         alternateRowStyles: { fillColor: GRAY_LIGHT },
+        columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 15 }
+        }
       });
       y = (doc as any).lastAutoTable.finalY + 10;
     } else {
@@ -440,5 +445,12 @@ export const exportPDF = async (
     doc.text(`CONFIDENTIAL - FOR INTERNAL USE ONLY`, 14, doc.internal.pageSize.height - 10);
   }
 
-  doc.save(`${(event.title || 'Workorder').replace(/\s+/g, '_')}_WO.pdf`);
+  let suffix = '_WO';
+  if (onlyCosts) {
+    suffix = '_cost';
+  } else if (!includeCosts) {
+    suffix = '_prod';
+  }
+
+  doc.save(`${(event.title || 'Workorder').replace(/\s+/g, '_')}${suffix}.pdf`);
 };

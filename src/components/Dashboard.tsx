@@ -833,6 +833,10 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
       endDate: formatInTimeZone(new Date(s.endDate), event?.venueTimezone || 'Europe/Rome', "yyyy-MM-dd'T'HH:mm"),
     })) || [],
   });
+  const start = new Date(formData.startDate).getTime();
+  const end = new Date(formData.endDate).getTime();
+  const durationHours = Math.max(0, (end - start) / (1000 * 60 * 60));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -2920,6 +2924,13 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                     </div>
                   ) : (
                     <div className="space-y-3">
+                      <div className="flex gap-3 items-center px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                         <div className="flex-1">Descrizione</div>
+                         <div className="w-24">Tipo</div>
+                         <div className="w-40">Importo/Ora</div>
+                         <div className="w-24 text-right">Totale</div>
+                         <div className="w-12"></div>
+                      </div>
                       {formData.costs.map((cost, index) => (
                          <div key={cost.id} className="flex gap-3 items-center bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
                            <div className="flex-1">
@@ -2935,7 +2946,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                              />
                            </div>
                            <select
-                            className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-md py-2 px-2 outline-none"
+                            className="w-24 text-xs font-bold bg-slate-50 border border-slate-200 rounded-md py-2 px-1 outline-none"
                             value={cost.type || 'Flat'}
                             onChange={e => {
                               const newCosts = [...formData.costs];
@@ -2961,18 +2972,25 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                }}
                              />
                            </div>
-                           <button
-                             type="button"
-                             onClick={() => {
-                               setFormData(prev => ({
-                                 ...prev, 
-                                 costs: prev.costs.filter((_: any, i: number) => i !== index)
-                               }));
-                             }}
-                             className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded"
-                           >
-                             <X className="w-5 h-5" />
-                           </button>
+                           <div className="w-24 text-right px-2">
+                             <div className="text-sm font-black text-slate-900 line-clamp-1">
+                               € {(cost.type === 'Hourly' ? (cost.amount * durationHours) : (cost.amount || 0)).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                             </div>
+                           </div>
+                           <div className="w-12 flex justify-center">
+                             <button
+                               type="button"
+                               onClick={() => {
+                                 setFormData(prev => ({
+                                   ...prev, 
+                                   costs: prev.costs.filter((_: any, i: number) => i !== index)
+                                 }));
+                               }}
+                               className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded"
+                             >
+                               <X className="w-5 h-5" />
+                             </button>
+                           </div>
                          </div>
                       ))}
                       {/* Total Bar */}
@@ -2981,14 +2999,9 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                         <div className="bg-emerald-100 text-emerald-800 font-black text-lg px-4 py-2 rounded-lg border border-emerald-200 shadow-sm">
                           € {formData.costs.reduce((acc, curr) => {
                               const baseAmount = curr.amount || 0;
-                              if (curr.type === 'Hourly' && formData.startDate && formData.endDate) {
-                                  const start = new Date(formData.startDate).getTime();
-                                  const end = new Date(formData.endDate).getTime();
-                                  const durationHours = Math.max(0, (end - start) / (1000 * 60 * 60));
-                                  return acc + (baseAmount * durationHours);
-                              }
-                              return acc + baseAmount;
-                          }, 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              const rowTotal = curr.type === 'Hourly' ? (baseAmount * durationHours) : baseAmount;
+                              return acc + rowTotal;
+                            }, 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </div>
                     </div>
