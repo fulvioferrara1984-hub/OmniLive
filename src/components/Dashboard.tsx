@@ -2377,7 +2377,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Signal Type</label>
                           <div className="flex bg-slate-200/50 p-1 rounded-lg">
-                            {['Clean', 'Graficato'].map(type => (
+                            {['Clean', 'GFX'].map(type => (
                               <button
                                 key={type}
                                 type="button"
@@ -2804,7 +2804,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                     onClick={() => {
                       setFormData(prev => ({
                         ...prev, 
-                        costs: [...(prev.costs || []), { id: crypto.randomUUID(), description: '', amount: 0 }]
+                        costs: [...(prev.costs || []), { id: crypto.randomUUID(), description: '', amount: 0, type: 'Flat' }]
                       }))
                     }}
                     className="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded uppercase tracking-widest flex items-center gap-1"
@@ -2834,6 +2834,18 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                }}
                              />
                            </div>
+                           <select
+                            className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-md py-2 px-2 outline-none"
+                            value={cost.type || 'Flat'}
+                            onChange={e => {
+                              const newCosts = [...formData.costs];
+                              newCosts[index].type = e.target.value;
+                              setFormData(prev => ({...prev, costs: newCosts}));
+                            }}
+                           >
+                            <option value="Flat">Flat</option>
+                            <option value="Hourly">Hourly</option>
+                           </select>
                            <div className="w-40 relative flex items-center">
                              <span className="absolute left-3 text-slate-400 font-bold">€</span>
                              <input 
@@ -2867,7 +2879,16 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end items-center gap-4">
                         <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Totale Stimato:</span>
                         <div className="bg-emerald-100 text-emerald-800 font-black text-lg px-4 py-2 rounded-lg border border-emerald-200 shadow-sm">
-                          € {formData.costs.reduce((acc, curr) => acc + (curr.amount || 0), 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          € {formData.costs.reduce((acc, curr) => {
+                              const baseAmount = curr.amount || 0;
+                              if (curr.type === 'Hourly' && formData.startDate && formData.endDate) {
+                                  const start = new Date(formData.startDate).getTime();
+                                  const end = new Date(formData.endDate).getTime();
+                                  const durationHours = Math.max(0, (end - start) / (1000 * 60 * 60));
+                                  return acc + (baseAmount * durationHours);
+                              }
+                              return acc + baseAmount;
+                          }, 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </div>
                     </div>
