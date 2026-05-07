@@ -777,6 +777,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
       videoStandard: event?.signalsTransport?.videoStandard || '1080p50',
       audioConfig: event?.signalsTransport?.audioConfig || '4 Pairs (8 Ch)',
       transportDetails: event?.signalsTransport?.transportDetails || [],
+      outputTransportDetails: event?.signalsTransport?.outputTransportDetails || [],
       outputsCount: event?.signalsTransport?.outputsCount || 1,
       outputDelivery: event?.signalsTransport?.outputDelivery || 'Main Only',
       outputTransportTypes: event?.signalsTransport?.outputTransportTypes || [],
@@ -1045,7 +1046,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                 {formData.isSingleMatch && (
                   <>
                     <div>
-                      <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team A <span className="text-[10px] text-slate-400 font-normal normal-case">(Opzionale)</span></label>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team A</label>
                       <input 
                         required={!formData.title && formData.isSingleMatch}
                         className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
@@ -1055,7 +1056,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       />
                     </div>
                     <div>
-                      <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team B <span className="text-[10px] text-slate-400 font-normal normal-case">(Opzionale)</span></label>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team B</label>
                       <input 
                         required={!formData.title && formData.isSingleMatch}
                         className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
@@ -1068,7 +1069,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                 )}
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description (Optional)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
                 <input 
                   className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
                   value={formData.title}
@@ -2497,7 +2498,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   {/* Transport Details */}
                   <div>
                     <div className="flex justify-between items-center mb-3">
-                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Dettagli Rete / Trasporto (SRT, Satellite, Fibra)</h4>
+                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Network / Transport Details (SRT, Satellite, Fiber)</h4>
                       <button 
                         type="button" 
                         onClick={() => {
@@ -2661,6 +2662,100 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                               );
                             })}
                           </div>
+                        </div>
+                        {/* Output Transport Details */}
+                        <div className="w-full col-span-full">
+                          <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Network / Transport Details (SRT, Satellite, Fiber)</h4>
+                            <button 
+                              type="button" 
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev, 
+                                  signalsTransport: {
+                                    ...prev.signalsTransport, 
+                                    outputTransportDetails: [...(prev.signalsTransport.outputTransportDetails || []), { id: crypto.randomUUID(), type: 'SRT', primaryInfo: '', secondaryInfo: '', notes: '' }]
+                                  }
+                                }))
+                              }}
+                              className="text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded uppercase tracking-widest flex items-center gap-1"
+                            >
+                              <Plus className="w-3 h-3" /> Aggiungi
+                            </button>
+                          </div>
+                          
+                          {(formData.signalsTransport.outputTransportDetails && formData.signalsTransport.outputTransportDetails.length > 0) ? (
+                            <div className="space-y-2">
+                              {formData.signalsTransport.outputTransportDetails.map((dec: any, index: number) => (
+                                <div key={dec.id} className="flex flex-wrap md:flex-nowrap gap-2 items-center bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                                  <div className="w-full md:w-32 shrink-0">
+                                    <select 
+                                      className="w-full text-xs font-bold text-slate-700 bg-slate-50 border border-slate-100 px-2 py-2 rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                                      value={dec.type || 'SRT'}
+                                      onChange={e => {
+                                          const newDetails = [...formData.signalsTransport.outputTransportDetails];
+                                          newDetails[index].type = e.target.value;
+                                          setFormData(prev => ({...prev, signalsTransport: {...prev.signalsTransport, outputTransportDetails: newDetails}}));
+                                      }}
+                                    >
+                                      <option value="SRT">SRT</option>
+                                      <option value="Satellite">Satellite</option>
+                                      <option value="Fiber">Fibra</option>
+                                      <option value="Other">Altro</option>
+                                    </select>
+                                  </div>
+                                  <div className="w-full md:w-1/4 shrink-0">
+                                    <input 
+                                        placeholder={dec.type === 'SRT' ? "IP Address..." : dec.type === 'Satellite' ? "Nome Satellite..." : dec.type === 'Fiber' ? "Provider (es. Synopsi)..." : "Dettaglio..."}
+                                        className="w-full text-xs font-mono bg-slate-50 border border-slate-100 px-3 py-2 rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                                        value={dec.primaryInfo || ''}
+                                        onChange={e => {
+                                          const newDetails = [...formData.signalsTransport.outputTransportDetails];
+                                          newDetails[index].primaryInfo = e.target.value;
+                                          setFormData(prev => ({...prev, signalsTransport: {...prev.signalsTransport, outputTransportDetails: newDetails}}));
+                                        }}
+                                    />
+                                  </div>
+                                  <div className="w-full md:w-32 shrink-0">
+                                    <input 
+                                        placeholder={dec.type === 'SRT' ? "Port (Opz)..." : dec.type === 'Satellite' ? "Freq/Pol..." : "Rif. RX..."}
+                                        className="w-full text-xs font-mono bg-slate-50 border border-slate-100 px-3 py-2 rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                                        value={dec.secondaryInfo || ''}
+                                        onChange={e => {
+                                          const newDetails = [...formData.signalsTransport.outputTransportDetails];
+                                          newDetails[index].secondaryInfo = e.target.value;
+                                          setFormData(prev => ({...prev, signalsTransport: {...prev.signalsTransport, outputTransportDetails: newDetails}}));
+                                        }}
+                                    />
+                                  </div>
+                                  <div className="w-full md:flex-1 flex gap-2">
+                                    <input 
+                                        placeholder="Note routing..."
+                                        className="w-full text-xs font-medium bg-slate-50 border border-slate-100 px-3 py-2 rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                                        value={dec.notes || ''}
+                                        onChange={e => {
+                                          const newDetails = [...formData.signalsTransport.outputTransportDetails];
+                                          newDetails[index].notes = e.target.value;
+                                          setFormData(prev => ({...prev, signalsTransport: {...prev.signalsTransport, outputTransportDetails: newDetails}}));
+                                        }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newDetails = formData.signalsTransport.outputTransportDetails.filter((_: any, i: number) => i !== index);
+                                        setFormData(prev => ({...prev, signalsTransport: {...prev.signalsTransport, outputTransportDetails: newDetails}}));
+                                      }}
+                                      className="shrink-0 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded"
+                                    >
+                                      <X className="w-5 h-5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-[10px] text-slate-400 italic">Nessun dettaglio di output aggiunto</div>
+                          )}
                         </div>
                      </div>
                   </div>
