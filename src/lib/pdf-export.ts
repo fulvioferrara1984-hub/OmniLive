@@ -78,10 +78,15 @@ export const exportPDF = async (
 
   const pageWidth = doc.internal.pageSize.width;
   
-  let isFirstPageCall = true;
-
+  let isFirstPage = true;
   const addHeaderPage = () => {
     let currentY = 0;
+    
+    if (!isFirstPage) {
+      return 15; // Small top margin for subsequent pages
+    }
+    
+    isFirstPage = false;
     
     if (headerImageBase64) {
       try {
