@@ -724,6 +724,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
   const [availableSystems, setAvailableSystems] = useState<System[]>([]);
   const [availableMachines, setAvailableMachines] = useState<Machine[]>([]);
   const [infrastructure, setInfrastructure] = useState<Infrastructure | null>(null);
+  const [recsTriggered, setRecsTriggered] = useState<Record<string, boolean>>({});
   useEffect(() => {
     const qSystems = query(collection(db, 'systems'));
     const unsubscribeSystems = onSnapshot(qSystems, (snapshot) => {
@@ -1899,18 +1900,39 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                     )}
                   </div>
                   <div className="md:col-span-2">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-3 h-10">
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">System Recommendation</label>
+                      {!recsTriggered[gallery.id] && (
+                        <button
+                          type="button"
+                          onClick={() => setRecsTriggered(prev => ({...prev, [gallery.id]: true}))}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-md active:scale-95"
+                        >
+                          <Cpu className="w-4 h-4" />
+                          Calculate Best Plan
+                        </button>
+                      )}
                     </div>
                     {(() => {
+                      if (!recsTriggered[gallery.id] && !gallery.systemId) {
+                        return (
+                          <div className="p-10 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3">
+                            <div className="p-3 bg-white rounded-full shadow-sm">
+                              <Cpu className="w-6 h-6 text-slate-300" />
+                            </div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-center max-w-[200px] leading-relaxed">
+                              Configure requirements above and click "Calculate" to find the ideal system
+                            </p>
+                          </div>
+                        );
+                      }
+                      
                       const recs = getRecommendedSystems(gallery, availableMachines, availableSystems, formData, allEvents, event || undefined);
                       if (recs.length === 0) {
                         return (
-                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 border-dashed text-center">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                              {gallery.mainConfig.cameras === 0 && gallery.mainConfig.pgms === 0 && gallery.mainConfig.outputs === 0
-                                ? "Set hardware requirements to see recommendations"
-                                : "No available systems match these requirements"}
+                          <div className="p-4 bg-red-50/50 rounded-xl border border-red-100 text-center">
+                            <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest">
+                              No available systems match requirements
                             </p>
                           </div>
                         );
@@ -1931,7 +1953,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             setFormData({ ...formData, galleries: newGalleries });
                           }}
                           className={cn(
-                            "flex flex-col items-start p-3 rounded-xl border transition-all text-left max-w-sm",
+                            "flex flex-col items-start p-3 rounded-xl border transition-all text-left max-w-sm shrink-0",
                             gallery.systemId === system.id
                               ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200 ring-2 ring-blue-600 ring-offset-2"
                               : isPlanA
@@ -2014,30 +2036,53 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       );
                       return (
                         <div className="flex flex-col gap-6 w-full mb-4">
-                          {/* PLAN A */}
-                          <div className="flex flex-col gap-3">
-                            <div className="flex items-center gap-1.5">
-                              <span className="flex items-center justify-center w-5 h-5 rounded bg-blue-100 text-blue-600">
-                                <Star className="w-3 h-3 fill-current" />
-                              </span>
-                              <label className="text-[11px] font-black tracking-widest text-slate-700 uppercase">
-                                Plan A: Miglior Match
-                              </label>
-                            </div>
-                            <div className="flex flex-wrap gap-3">
-                              {renderSystemButton(planA, true)}
-                            </div>
-                          </div>
-                          {/* ALTERNATIVES */}
-                          {alternatives.length > 0 && (
-                            <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-                              <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                                Alternative (Plan B+)
-                              </label>
-                              <div className="flex flex-wrap gap-3 opacity-90 hover:opacity-100 transition-opacity">
-                                {alternatives.map(sys => renderSystemButton(sys, false))}
+                          {/* If triggered, show both Plan A and Alternatives */}
+                          {recsTriggered[gallery.id] ? (
+                            <>
+                              {/* PLAN A */}
+                              <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="flex items-center justify-center w-5 h-5 rounded bg-blue-100 text-blue-600">
+                                    <Star className="w-3 h-3 fill-current" />
+                                  </span>
+                                  <label className="text-[11px] font-black tracking-widest text-slate-700 uppercase">
+                                    Plan A: Best Match
+                                  </label>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                  {renderSystemButton(planA, true)}
+                                </div>
                               </div>
-                            </div>
+                              {/* ALTERNATIVES */}
+                              {alternatives.length > 0 && (
+                                <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
+                                  <label className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                                    Alternatives (Plan B+)
+                                  </label>
+                                  <div className="flex flex-wrap gap-3 opacity-90 hover:opacity-100 transition-opacity">
+                                    {alternatives.map(sys => renderSystemButton(sys, false))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            /* If not triggered but system is selected, show only the selected system */
+                            gallery.systemId && (
+                              <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                                  <label className="text-[10px] font-black tracking-widest text-slate-700 uppercase">
+                                    Selected System
+                                  </label>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                  {(() => {
+                                    const selected = recs.find(r => r.id === gallery.systemId);
+                                    return selected ? renderSystemButton(selected, selected.id === planA.id) : null;
+                                  })()}
+                                </div>
+                              </div>
+                            )
                           )}
                         </div>
                       );
