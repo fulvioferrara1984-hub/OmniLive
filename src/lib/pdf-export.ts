@@ -211,6 +211,30 @@ export const exportPDF = async (
         y += 4;
     }
 
+    // --- SESSIONS ---
+    if (event.sessions && event.sessions.length > 0) {
+      y = addSectionTitle('Event Sessions / Matches', y);
+      
+      const sessionsBody = event.sessions.map((s: any) => [
+        String(s.title || 'Session'),
+        s.teamA && s.teamB ? `${s.teamA} vs ${s.teamB}` : 'N/A',
+        formatDate(s.startDate, event.venueTimezone),
+        formatDate(s.endDate, event.venueTimezone)
+      ]);
+      
+      autoTable(doc, {
+        startY: y,
+        head: [['Title', 'Teams', 'Start', 'End']],
+        body: sessionsBody,
+        theme: 'striped',
+        styles: { font: FONT_FAMILY },
+        headStyles: { fillColor: GRAY_DARK, textColor: WHITE, fontSize: 9, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 8 },
+        alternateRowStyles: { fillColor: GRAY_LIGHT },
+      });
+      y = (doc as any).lastAutoTable.finalY + 10;
+    }
+
     // --- GALLERIES ---
     if (event.galleries && event.galleries.length > 0) {
       y = addSectionTitle('Galleries & Configuration', y);

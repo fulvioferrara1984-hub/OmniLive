@@ -872,13 +872,22 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
     e.preventDefault();
     setLoading(true);
     try {
-      const displayTitle = formData.teamA && formData.teamB 
-        ? `${formData.teamA} vs ${formData.teamB}`
+      let globalA = formData.teamA;
+      let globalB = formData.teamB;
+      if (!globalA && !globalB && formData.sessions && formData.sessions.length > 0) {
+        globalA = formData.sessions[0].teamA || '';
+        globalB = formData.sessions[0].teamB || '';
+      }
+
+      const displayTitle = globalA && globalB 
+        ? `${globalA} vs ${globalB}`
         : formData.title;
 
       const parsedSessions = formData.sessions?.map(s => ({
         id: s.id,
         title: s.title || '',
+        teamA: s.teamA || '',
+        teamB: s.teamB || '',
         startDate: fromZonedTime(s.startDate, formData.venueTimezone || 'Europe/Rome').toISOString(),
         endDate: fromZonedTime(s.endDate, formData.venueTimezone || 'Europe/Rome').toISOString(),
       }));
@@ -950,7 +959,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-7xl max-h-[95vh] overflow-hidden flex flex-col"
       >
         <div className="flex flex-row flex-1 min-h-0">
           {/* Sidebar Navigation */}
@@ -1262,8 +1271,8 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
               {formData.sessions && formData.sessions.length > 0 && (
                 <div className="space-y-3">
                   {formData.sessions.map((session, idx) => (
-                    <div key={session.id} className="grid grid-cols-12 gap-3 items-start bg-white p-3 rounded-lg border border-slate-200 shadow-sm relative group">
-                      <div className="col-span-12 md:col-span-3">
+                    <div key={session.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-white p-3 rounded-lg border border-slate-200 shadow-sm relative group">
+                      <div className="md:col-span-3">
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Session Title</label>
                         <input
                           type="text"
@@ -1274,11 +1283,11 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             updated[idx].title = e.target.value;
                             setFormData({ ...formData, sessions: updated });
                           }}
-                          placeholder="e.g. Day 1, Match 1"
+                          placeholder="e.g. Match 1"
                         />
                       </div>
-                      <div className="col-span-6 md:col-span-2">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Home Team <span className="text-slate-400 font-normal">(Opt)</span></label>
+                      <div className="md:col-span-2">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Home Team</label>
                         <input
                           type="text"
                           className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-sm"
@@ -1290,8 +1299,8 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                           }}
                         />
                       </div>
-                      <div className="col-span-6 md:col-span-2">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Away Team <span className="text-slate-400 font-normal">(Opt)</span></label>
+                      <div className="md:col-span-2">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Away Team</label>
                         <input
                           type="text"
                           className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-sm"
@@ -1303,12 +1312,13 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                           }}
                         />
                       </div>
-                      <div className="col-span-6 md:col-span-2">
+                      
+                      <div className="md:col-span-2">
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Start (Local)</label>
                         <input
                           type="datetime-local"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-sm"
-                          value={session.startDate}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-xs"
+                          value={session.startDate || (formData.startDate ? formData.startDate.substring(0, 16) : '')}
                           onChange={e => {
                             const updated = [...(formData.sessions || [])];
                             updated[idx].startDate = e.target.value;
@@ -1316,12 +1326,12 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                           }}
                         />
                       </div>
-                      <div className="col-span-6 md:col-span-2">
+                      <div className="md:col-span-2">
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">End (Local)</label>
                         <input
                           type="datetime-local"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-sm"
-                          value={session.endDate}
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-xs"
+                          value={session.endDate || (formData.endDate ? formData.endDate.substring(0, 16) : '')}
                           onChange={e => {
                             const updated = [...(formData.sessions || [])];
                             updated[idx].endDate = e.target.value;
@@ -1329,14 +1339,15 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                           }}
                         />
                       </div>
-                      <div className="col-span-12 md:col-span-1 flex justify-end items-end h-full py-1">
+                      <div className="md:col-span-1 flex justify-center pb-1">
                         <button
                           type="button"
                           onClick={() => {
                             const updated = formData.sessions?.filter((_, i) => i !== idx);
                             setFormData({ ...formData, sessions: updated });
                           }}
-                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent shadow-none"
+                          title="Remove Session"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
