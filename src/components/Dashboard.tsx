@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as pdfLib from '../lib/pdf-export';
 import { 
   collection, 
   query, 
@@ -2746,7 +2747,9 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                               ))}
                             </div>
                           ) : (
-                            <div className="text-[10px] text-slate-400 italic">Nessun dettaglio di output aggiunto</div>
+                            <div className="text-[10px] text-slate-400 bg-white p-3 rounded border border-slate-100 uppercase tracking-widest text-center">
+                              Nessun dettaglio aggiunto
+                            </div>
                           )}
                         </div>
                      </div>
@@ -3044,13 +3047,11 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             onClick={(e) => {
                                 e.stopPropagation();
                                 console.log("Export button clicked");
-                                import('../lib/pdf-export').then(lib => {
-                                    const params = {
-                                        includeCosts: opt !== 'No Costs',
-                                        onlyCosts: opt === 'Costs Only'
-                                    };
-                                    lib.exportPDF(event || formData, params.includeCosts, params.onlyCosts, profile?.role || 'operator', coverWorkorder);
-                                });
+                                const params = {
+                                    includeCosts: opt !== 'No Costs',
+                                    onlyCosts: opt === 'Costs Only'
+                                };
+                                pdfLib.exportPDF(event || formData, params.includeCosts, params.onlyCosts, profile?.role || 'operator', coverWorkorder);
                             }}
                             className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 border-b border-slate-100 last:border-b-0 transition-colors"
                         >
@@ -3066,9 +3067,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                     type="button"
                     onClick={(e) => {
                         e.stopPropagation();
-                        import('../lib/pdf-export').then(lib => {
-                            lib.exportPDF(event || formData, false, false, profile?.role || 'operator', coverWorkorder);
-                        });
+                        pdfLib.exportPDF(event || formData, false, false, profile?.role || 'operator', coverWorkorder);
                     }}
                     className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-sm shadow-lg transition-all flex items-center gap-2"
                 >
