@@ -366,14 +366,14 @@ const CardsView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
           )}
           
           <h3 className="font-bold text-slate-900 mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
-            {event.teamA && event.teamB ? (
+            {event.isSingleMatch !== false && event.teamA && event.teamB ? (
               <div className="flex items-center gap-2">
                 <span>{event.teamA}</span>
                 <span className="text-slate-400 font-normal text-xs">vs</span>
                 <span>{event.teamB}</span>
               </div>
             ) : (
-              event.title
+              event.isSingleMatch === false && event.competition ? event.competition : event.title
             )}
           </h3>
           <p className="text-sm text-slate-500 line-clamp-2 mb-4 h-10">{event.description || 'No description'}</p>
@@ -430,7 +430,7 @@ const ListView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: Br
               <td className="px-6 py-4">
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   {event.competition && <span className="text-[10px] text-blue-600 uppercase">{event.competition}</span>}
-                  {event.teamA && event.teamB ? `${event.teamA} vs ${event.teamB}` : event.title}
+                  {event.isSingleMatch !== false && event.teamA && event.teamB ? `${event.teamA} vs ${event.teamB}` : (event.isSingleMatch === false && event.competition ? event.competition : event.title)}
                   {event.galleries?.some(g => g.layoutPreview) && (
                     <ImageIcon className="w-3.5 h-3.5 text-blue-500" />
                   )}
@@ -565,8 +565,8 @@ const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
                         const viewStart = startOfDay(days[0]).getTime();
                         const viewEnd = endOfDay(days[days.length - 1]).getTime();
 
-                        // Treat overall event as a session if no sessions exist
-                        const blocks = (event.sessions && event.sessions.length > 0)
+                        // Handle if single match with sessions or a tournament spanning entire period
+                        const blocks = (event.isSingleMatch !== false && event.sessions && event.sessions.length > 0)
                           ? event.sessions.map(s => {
                               let displayTitle = s.title;
                               if (s.teamA && s.teamB) {
@@ -574,7 +574,7 @@ const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
                               }
                               return { start: new Date(s.startDate).getTime(), end: new Date(s.endDate).getTime(), title: displayTitle };
                             })
-                          : [{ start: start.getTime(), end: Math.max(start.getTime() + 60 * 60 * 1000, end.getTime()), title: event.title }];
+                          : [{ start: start.getTime(), end: Math.max(start.getTime() + 60 * 60 * 1000, end.getTime()), title: event.isSingleMatch === false && event.competition ? event.competition : event.title }];
 
                         return blocks.map((block, idx) => {
                           const eventStart = block.start;
@@ -795,6 +795,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
   const [formData, setFormData] = useState({
     title: event?.title || '',
     competition: event?.competition || '',
+    isSingleMatch: event?.isSingleMatch ?? true,
     teamA: event?.teamA || '',
     teamB: event?.teamB || '',
     description: event?.description || '',
@@ -872,16 +873,16 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
     e.preventDefault();
     setLoading(true);
     try {
-      let globalA = formData.teamA;
-      let globalB = formData.teamB;
-      if (!globalA && !globalB && formData.sessions && formData.sessions.length > 0) {
+      let globalA = formData.isSingleMatch ? formData.teamA : '';
+      let globalB = formData.isSingleMatch ? formData.teamB : '';
+      if (formData.isSingleMatch && !globalA && !globalB && formData.sessions && formData.sessions.length > 0) {
         globalA = formData.sessions[0].teamA || '';
         globalB = formData.sessions[0].teamB || '';
       }
 
-      const displayTitle = globalA && globalB 
+      const displayTitle = (formData.isSingleMatch && globalA && globalB)
         ? `${globalA} vs ${globalB}`
-        : formData.title;
+        : (formData.competition || formData.title || 'Event');
 
       const parsedSessions = formData.sessions?.map(s => ({
         id: s.id,
@@ -894,6 +895,8 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
 
       const data = {
         ...formData,
+        teamA: globalA,
+        teamB: globalB,
         title: displayTitle,
         logs,
         createdBy: user.uid,
@@ -1071,7 +1074,22 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
+                <div className="md:col-span-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                      checked={formData.isSingleMatch}
+                      onChange={(e) => setFormData({ ...formData, isSingleMatch: e.target.checked })}
+                    />
+                    <span className="text-sm font-bold text-slate-700">Single Match (Global Home/Away Teams)</span>
+                  </label>
+                  <p className="text-xs text-slate-500 mt-1 ml-6">
+                    Se non attivata, il calendario mostrerà solo il nome della competizione e la sua intera durata.
+                  </p>
+                </div>
+
+                <div className={formData.isSingleMatch ? "md:col-span-1" : "md:col-span-3"}>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Competition</label>
                   <input 
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
@@ -1080,26 +1098,30 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                     placeholder="e.g. Champions League"
                   />
                 </div>
-                <div>
-                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team A <span className="text-[10px] text-slate-400 font-normal normal-case">(Opzionale)</span></label>
-                  <input 
-                    required={!formData.title}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
-                    value={formData.teamA}
-                    onChange={e => setFormData({ ...formData, teamA: e.target.value })}
-                    placeholder="Home Team"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team B <span className="text-[10px] text-slate-400 font-normal normal-case">(Opzionale)</span></label>
-                  <input 
-                    required={!formData.title}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
-                    value={formData.teamB}
-                    onChange={e => setFormData({ ...formData, teamB: e.target.value })}
-                    placeholder="Away Team"
-                  />
-                </div>
+                {formData.isSingleMatch && (
+                  <>
+                    <div>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team A <span className="text-[10px] text-slate-400 font-normal normal-case">(Opzionale)</span></label>
+                      <input 
+                        required={!formData.title && formData.isSingleMatch}
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
+                        value={formData.teamA}
+                        onChange={e => setFormData({ ...formData, teamA: e.target.value })}
+                        placeholder="Home Team"
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Team B <span className="text-[10px] text-slate-400 font-normal normal-case">(Opzionale)</span></label>
+                      <input 
+                        required={!formData.title && formData.isSingleMatch}
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
+                        value={formData.teamB}
+                        onChange={e => setFormData({ ...formData, teamB: e.target.value })}
+                        placeholder="Away Team"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="md:col-span-2">

@@ -136,6 +136,7 @@ export interface BroadcastEvent {
   id: string;
   title: string;
   competition?: string;
+  isSingleMatch?: boolean;
   teamA?: string;
   teamB?: string;
   description?: string;
