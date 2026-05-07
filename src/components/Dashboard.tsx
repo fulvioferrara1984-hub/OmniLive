@@ -53,7 +53,7 @@ import {
   Trash2
 } from 'lucide-react';
 import tzlookup from 'tz-lookup';
-import { format, isSameDay, startOfDay, endOfDay, addDays, subDays, eachDayOfInterval, startOfWeek, endOfWeek, differenceInDays } from 'date-fns';
+import { format, isSameDay, startOfDay, endOfDay, addDays, subDays, eachDayOfInterval, startOfWeek, endOfWeek, differenceInDays, startOfMonth, endOfMonth, addMonths, subMonths, isSameMonth } from 'date-fns';
 import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
 import { enUS } from 'date-fns/locale';
 import { cn } from '../lib/utils';
@@ -488,137 +488,146 @@ const ListView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: Br
 const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: BroadcastEvent) => void }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
   const days = eachDayOfInterval({
-    start: startOfWeek(currentDate, { weekStartsOn: 1 }),
-    end: endOfWeek(addDays(currentDate, 7), { weekStartsOn: 1 })
+    start: calendarStart,
+    end: calendarEnd
   });
+
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
       <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
         <h3 className="font-bold text-slate-900 flex items-center gap-2">
           <Calendar className="w-4 h-4 text-blue-600" />
-          Production Timeline
+          Production Calendar
         </h3>
         <div className="flex items-center gap-2">
-          <button onClick={() => setCurrentDate(subDays(currentDate, 7))} className="p-1 hover:bg-white rounded border border-slate-200"><ChevronLeft className="w-4 h-4" /></button>
-          <span className="text-sm font-bold px-4">{format(currentDate, 'MMMM yyyy', { locale: enUS })}</span>
-          <button onClick={() => setCurrentDate(addDays(currentDate, 7))} className="p-1 hover:bg-white rounded border border-slate-200"><ChevronRight className="w-4 h-4" /></button>
+          <button onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="p-1 hover:bg-white rounded border border-slate-200"><ChevronLeft className="w-4 h-4" /></button>
+          <span className="text-sm font-bold px-4">{format(monthStart, 'MMMM yyyy', { locale: enUS })}</span>
+          <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 hover:bg-white rounded border border-slate-200"><ChevronRight className="w-4 h-4" /></button>
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <div className="min-w-[1200px]">
-          {/* Days Header */}
-          <div className="flex border-b border-slate-200">
-            <div className="w-64 flex-shrink-0 border-r border-slate-200 p-4 font-bold text-xs text-slate-500 uppercase">Event</div>
-            {days.map(day => (
-              <div key={day.toISOString()} className={cn(
-                "flex-1 border-r border-slate-100 p-2 text-center text-xs font-bold",
-                isSameDay(day, new Date()) ? "bg-blue-50 text-blue-600" : "text-slate-500"
-              )}>
-                <div>{format(day, 'EEE', { locale: enUS })}</div>
-                <div className="text-lg">{format(day, 'd')}</div>
-              </div>
-            ))}
-          </div>
+      <div className="flex flex-col">
+        {/* Days Header */}
+        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+          {weekDays.map(day => (
+            <div key={day} className="py-2 text-center text-xs font-bold text-slate-500 uppercase">{day}</div>
+          ))}
+        </div>
 
-          {/* Event Rows */}
-          <div className="divide-y divide-slate-100">
-            {events.map(event => {
-              const start = new Date(event.startDate);
-              const end = new Date(event.endDate);
-              
-              return (
-                <div key={event.id} className="flex group hover:bg-slate-50 transition-colors">
-                  <div className="w-64 flex-shrink-0 border-r border-slate-200 p-3 flex justify-between items-center group-hover:bg-slate-50 transition-colors">
-                    <div className="truncate font-semibold text-sm text-slate-700 flex-1">
-                      {event.title}
-                    </div>
-                    {event.projectHubUrl && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(event.projectHubUrl, '_blank');
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors ml-2"
-                        title="Open Project Hub"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex-1 relative h-16 flex items-center">
-                    {/* Background Grid */}
-                    <div className="absolute inset-0 flex">
-                      {days.map(day => (
-                        <div key={day.toISOString()} className="flex-1 border-r border-slate-100/50" />
-                      ))}
-                    </div>
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 bg-slate-200 gap-[1px]">
+          {days.map(day => {
+            const dayStart = startOfDay(day).getTime();
+            const dayEnd = endOfDay(day).getTime();
+
+            // Find events block that overlap with this day
+            const dayBlocks: any[] = [];
+            events.forEach(event => {
+              if (event.isSingleMatch !== false) {
+                // Single Match
+                const blocks = (event.sessions && event.sessions.length > 0)
+                  ? event.sessions.map(s => {
+                      let displayTitle = s.title;
+                      if (s.teamA && s.teamB) {
+                        const tA = s.teamA.substring(0, 3).toUpperCase();
+                        const tB = s.teamB.substring(0, 3).toUpperCase();
+                        displayTitle = `${tA} vs ${tB}`;
+                      }
+                      const finalTitle = event.competition ? `${event.competition} - ${displayTitle}` : displayTitle;
+                      return { start: new Date(s.startDate).getTime(), end: new Date(s.endDate).getTime(), title: finalTitle, event };
+                    })
+                  : [{ 
+                      start: new Date(event.startDate).getTime(), 
+                      end: new Date(event.endDate).getTime(), 
+                      title: event.competition 
+                        ? `${event.competition} - ${(event.teamA && event.teamB) ? `${event.teamA.substring(0, 3).toUpperCase()} vs ${event.teamB.substring(0, 3).toUpperCase()}` : event.title}`
+                        : ((event.teamA && event.teamB) ? `${event.teamA.substring(0, 3).toUpperCase()} vs ${event.teamB.substring(0, 3).toUpperCase()}` : event.title), 
+                      event 
+                    }];
+
+                blocks.forEach(block => {
+                  if (block.start <= dayEnd && block.end >= dayStart) {
+                    dayBlocks.push(block);
+                  }
+                });
+              } else {
+                // Competition
+                const eventStart = new Date(event.startDate).getTime();
+                const eventEnd = new Date(event.endDate).getTime();
+                
+                if (eventStart <= dayEnd && eventEnd >= dayStart) {
+                  const titleBase = event.competition || event.title;
+                  let dayTitle = titleBase;
+                  
+                  if (event.sessions && event.sessions.length > 0) {
+                    let sessionsToday = 0;
+                    event.sessions.forEach(s => {
+                      const sStart = new Date(s.startDate).getTime();
+                      const sEnd = new Date(s.endDate).getTime();
+                      if (sStart <= dayEnd && sEnd >= dayStart) {
+                        sessionsToday++;
+                      }
+                    });
                     
-                    {/* Event Bar(s) */}
-                    <div className="relative w-full h-full flex items-center px-1">
-                      {(() => {
-                        const viewStart = startOfDay(days[0]).getTime();
-                        const viewEnd = endOfDay(days[days.length - 1]).getTime();
+                    if (sessionsToday > 0) {
+                      dayTitle = `${titleBase}: ${sessionsToday} session${sessionsToday > 1 ? 's' : ''}`;
+                    } else {
+                      // Skip rendering on days where competition has explicit sessions but none on this day
+                      return;
+                    }
+                  }
+                  
+                  dayBlocks.push({
+                    start: Math.max(eventStart, dayStart),
+                    end: Math.min(eventEnd, dayEnd),
+                    title: dayTitle,
+                    event
+                  });
+                }
+              }
+            });
 
-                        // Handle if single match with sessions or a tournament spanning entire period
-                        const blocks = (event.isSingleMatch !== false && event.sessions && event.sessions.length > 0)
-                          ? event.sessions.map(s => {
-                              let displayTitle = s.title;
-                              if (s.teamA && s.teamB) {
-                                displayTitle = `${s.teamA} vs ${s.teamB}`;
-                              }
-                              return { start: new Date(s.startDate).getTime(), end: new Date(s.endDate).getTime(), title: displayTitle };
-                            })
-                          : [{ start: start.getTime(), end: Math.max(start.getTime() + 60 * 60 * 1000, end.getTime()), title: event.isSingleMatch === false && event.competition ? event.competition : event.title }];
+            // Sort by start time
+            dayBlocks.sort((a, b) => a.start - b.start);
 
-                        return blocks.map((block, idx) => {
-                          const eventStart = block.start;
-                          const eventEnd = block.end;
-                          
-                          // Check if block overlaps with the current view
-                          if (eventStart <= viewEnd && eventEnd >= viewStart) {
-                            // Calculate bounded display start and end
-                            const displayStart = Math.max(eventStart, viewStart);
-                            const displayEnd = Math.min(eventEnd, viewEnd);
-                            
-                            const totalDuration = viewEnd - viewStart;
-                            const leftPct = Math.max(0, ((displayStart - viewStart) / totalDuration) * 100);
-                            const widthPct = Math.max(0.2, ((displayEnd - displayStart) / totalDuration) * 100);
-                            
-                            return (
-                              <div 
-                                key={idx}
-                                onClick={() => onEdit(event)}
-                                className={cn(
-                                  "absolute h-8 rounded-lg shadow-sm border flex items-center px-3 text-[10px] font-bold text-white cursor-pointer hover:scale-[1.02] transition-transform z-10 truncate",
-                                  event.status === 'Live' ? "bg-red-500 border-red-600 animate-pulse" : 
-                                  event.type === 'Live Event' ? "bg-red-500 border-red-600" : "bg-yellow-500 border-yellow-600"
-                                )}
-                                title={block.title}
-                                style={{
-                                  left: `${leftPct}%`,
-                                  width: `calc(${widthPct}% - 4px)`,
-                                  minWidth: '80px', // Minimum readable width
-                                }}
-                              >
-                                {block.title}
-                              </div>
-                            );
-                          }
-                          return null;
-                        });
-                      })()}
-                    </div>
-                  </div>
+            return (
+              <div key={day.toISOString()} className={cn(
+                "min-h-[120px] bg-white p-2 flex flex-col gap-1 transition-colors",
+                !isSameMonth(day, monthStart) && "bg-slate-50/50"
+              )}>
+                <div className={cn(
+                  "text-right text-xs font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full ml-auto",
+                  isSameDay(day, new Date()) ? "bg-blue-600 text-white" : (!isSameMonth(day, monthStart) ? "text-slate-400" : "text-slate-700")
+                )}>
+                  {format(day, 'd')}
                 </div>
-              );
-            })}
-          </div>
+                <div className="space-y-1 flex-1 overflow-y-auto max-h-[160px] hide-scrollbar">
+                  {dayBlocks.map((block, idx) => (
+                    <div 
+                      key={`${block.event.id}-${idx}`}
+                      onClick={() => onEdit(block.event)}
+                      className={cn(
+                        "rounded px-1.5 py-1 text-[10px] font-bold text-white cursor-pointer hover:opacity-80 transition-opacity truncate shadow-sm",
+                        block.event.status === 'Live' ? "bg-red-500" : 
+                        block.event.type === 'Live Event' ? "bg-red-500" : "bg-yellow-500"
+                      )}
+                      title={block.title}
+                    >
+                      {format(new Date(Math.max(block.start, dayStart)), 'HH:mm')} - {block.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
