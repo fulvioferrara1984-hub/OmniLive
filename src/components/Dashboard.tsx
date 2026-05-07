@@ -2794,18 +2794,18 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       Nessun orario definito. Aggiungi attività per creare il running order.
                     </div>
                   ) : (
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse table-fixed">
                       <thead>
                         <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-widest font-black">
                           <th className="p-3 w-32 border-r border-slate-200">Date</th>
-                          <th className="p-3 w-32 border-r border-slate-200">Time</th>
-                          <th className="p-3 w-1/3 border-r border-slate-200">Activity</th>
-                          <th className="p-3">Notes</th>
+                          <th className="p-3 w-28 border-r border-slate-200">Time</th>
+                          <th className="p-3 w-1/4 border-r border-slate-200">Activity</th>
+                          <th className="p-3 w-auto">Notes</th>
                           <th className="p-3 w-12 text-center"></th>
                         </tr>
                       </thead>
                       <tbody>
-                        {formData.schedule.map((item, index) => (
+                        {[...(formData.schedule || [])].sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time)).map((item) => (
                           <tr key={item.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
                             <td className="p-2 border-r border-slate-200">
                               <input 
@@ -2814,8 +2814,11 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                 value={item.date || ''}
                                 onChange={e => {
                                   const newSchedule = [...(formData.schedule || [])];
-                                  newSchedule[index].date = e.target.value;
-                                  setFormData(prev => ({...prev, schedule: newSchedule}));
+                                  const idx = newSchedule.findIndex(s => s.id === item.id);
+                                  if (idx !== -1) {
+                                      newSchedule[idx].date = e.target.value;
+                                      setFormData(prev => ({...prev, schedule: newSchedule}));
+                                  }
                                 }}
                               />
                             </td>
@@ -2826,34 +2829,41 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                 value={item.time}
                                 onChange={e => {
                                   const newSchedule = [...formData.schedule];
-                                  newSchedule[index].time = e.target.value;
-                                  setFormData(prev => ({...prev, schedule: newSchedule}));
+                                  const idx = newSchedule.findIndex(s => s.id === item.id);
+                                  if (idx !== -1) {
+                                      newSchedule[idx].time = e.target.value;
+                                      setFormData(prev => ({...prev, schedule: newSchedule}));
+                                  }
                                 }}
                               />
                             </td>
                             <td className="p-2 border-r border-slate-200">
-                              <input 
-                                type="text"
+                              <textarea 
                                 placeholder="Descrizione attività..."
-                                className="w-full text-xs font-medium bg-transparent border-0 focus:ring-0 px-2 outline-none"
+                                className="w-full text-xs font-medium bg-transparent border-0 focus:ring-0 px-2 outline-none resize-y min-h-[40px]"
                                 value={item.activity}
                                 onChange={e => {
                                   const newSchedule = [...formData.schedule];
-                                  newSchedule[index].activity = e.target.value;
-                                  setFormData(prev => ({...prev, schedule: newSchedule}));
+                                  const idx = newSchedule.findIndex(s => s.id === item.id);
+                                  if (idx !== -1) {
+                                      newSchedule[idx].activity = e.target.value;
+                                      setFormData(prev => ({...prev, schedule: newSchedule}));
+                                  }
                                 }}
                               />
                             </td>
                             <td className="p-2">
-                              <input 
-                                type="text"
+                              <textarea 
                                 placeholder="Note aggiuntive..."
-                                className="w-full text-xs text-slate-500 bg-transparent border-0 focus:ring-0 px-2 outline-none"
+                                className="w-full text-xs text-slate-500 bg-transparent border-0 focus:ring-0 px-2 outline-none resize-y min-h-[40px]"
                                 value={item.notes}
                                 onChange={e => {
                                   const newSchedule = [...formData.schedule];
-                                  newSchedule[index].notes = e.target.value;
-                                  setFormData(prev => ({...prev, schedule: newSchedule}));
+                                  const idx = newSchedule.findIndex(s => s.id === item.id);
+                                  if (idx !== -1) {
+                                      newSchedule[idx].notes = e.target.value;
+                                      setFormData(prev => ({...prev, schedule: newSchedule}));
+                                  }
                                 }}
                               />
                             </td>
