@@ -60,11 +60,8 @@ import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import logo from '../logo.png';
 import tgiLogo from '../TGISport_Black.png';
-
 import coverWorkorder from '../CoverWorkorder.png';
-
 type ViewMode = 'list' | 'gantt' | 'cards';
-
 export const Dashboard = () => {
   const { profile, signOut } = useAuth();
   const [currentView, setCurrentView] = useState<'events' | 'systems'>('events');
@@ -77,7 +74,6 @@ export const Dashboard = () => {
   const [filterType, setFilterType] = useState<EventType | 'All'>('All');
   const [filterStatus, setFilterStatus] = useState<EventStatus | 'All'>('All');
   const [filterSport, setFilterSport] = useState<string>('All');
-
   useEffect(() => {
     const q = query(collection(db, 'events'), orderBy('startDate', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -88,7 +84,6 @@ export const Dashboard = () => {
     });
     return unsubscribe;
   }, []);
-
   const filteredEvents = events.filter(e => {
     const matchesSearch = e.title.toLowerCase().includes(search.toLowerCase()) || 
                          e.description?.toLowerCase().includes(search.toLowerCase());
@@ -97,9 +92,7 @@ export const Dashboard = () => {
     const matchesSport = filterSport === 'All' || e.sport === filterSport;
     return matchesSearch && matchesType && matchesStatus && matchesSport;
   });
-
   const sportsList = Array.from(new Set(events.map(e => e.sport).filter(Boolean))) as string[];
-
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Header */}
@@ -119,7 +112,6 @@ export const Dashboard = () => {
             referrerPolicy="no-referrer"
           />
         </div>
-
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
             <button 
@@ -141,9 +133,7 @@ export const Dashboard = () => {
               Systems
             </button>
           </div>
-
           <div className="h-8 w-px bg-slate-200" />
-
           {currentView === 'events' && (
             <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
               <button 
@@ -166,9 +156,7 @@ export const Dashboard = () => {
               </button>
             </div>
           )}
-
           <div className="h-8 w-px bg-slate-200" />
-
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-semibold text-slate-900">{profile?.displayName || profile?.email}</p>
@@ -193,7 +181,6 @@ export const Dashboard = () => {
           </div>
         </div>
       </header>
-
       {/* Main Content */}
       <main className="flex-1 p-6 w-full space-y-6">
         {currentView === 'events' ? (
@@ -243,7 +230,6 @@ export const Dashboard = () => {
               <option value="Done">Done</option>
             </select>
           </div>
-
           <button 
             onClick={() => { setEditingEvent(null); setIsModalOpen(true); }}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition-all shadow-sm"
@@ -252,7 +238,6 @@ export const Dashboard = () => {
             New Event
           </button>
         </div>
-
         {/* Views */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -272,7 +257,6 @@ export const Dashboard = () => {
           <SystemManager />
         )}
       </main>
-
       {/* Modal */}
       {isModalOpen && (
         <EventModal 
@@ -288,7 +272,6 @@ export const Dashboard = () => {
     </div>
   );
 };
-
 const StatusBadge = ({ status }: { status: EventStatus }) => {
   const styles = {
     'TBC': 'bg-slate-100 text-slate-700 border-slate-200',
@@ -297,7 +280,6 @@ const StatusBadge = ({ status }: { status: EventStatus }) => {
     'Live': 'bg-red-100 text-red-700 border-red-200 animate-pulse',
     'Done': 'bg-green-100 text-green-700 border-green-200'
   };
-
   const icons = {
     'TBC': <Clock className="w-3 h-3" />,
     'Confirmed-In progress': <Loader2 className="w-3 h-3 animate-spin" />,
@@ -305,7 +287,6 @@ const StatusBadge = ({ status }: { status: EventStatus }) => {
     'Live': <PlayCircle className="w-3 h-3" />,
     'Done': <CheckCircle2 className="w-3 h-3" />
   };
-
   return (
     <span className={cn("px-2.5 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 w-fit", styles[status])}>
       {icons[status]}
@@ -313,7 +294,6 @@ const StatusBadge = ({ status }: { status: EventStatus }) => {
     </span>
   );
 };
-
 const TypeBadge = ({ type }: { type: EventType }) => {
   const styles = {
     'Live Event': 'bg-red-50 text-red-600',
@@ -325,7 +305,6 @@ const TypeBadge = ({ type }: { type: EventType }) => {
     </span>
   );
 };
-
 const CardsView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: BroadcastEvent) => void }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -406,7 +385,6 @@ const CardsView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
     </div>
   );
 };
-
 const ListView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: BroadcastEvent) => void }) => {
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -484,7 +462,6 @@ const ListView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: Br
     </div>
   );
 };
-
 const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: BroadcastEvent) => void }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   
@@ -492,14 +469,11 @@ const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
   const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-
   const days = eachDayOfInterval({
     start: calendarStart,
     end: calendarEnd
   });
-
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
       <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
@@ -521,13 +495,11 @@ const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
             <div key={day} className="py-2 text-center text-xs font-bold text-slate-500 uppercase">{day}</div>
           ))}
         </div>
-
         {/* Calendar Grid */}
         <div className="grid grid-cols-7 bg-slate-200 gap-[1px]">
           {days.map(day => {
             const dayStart = startOfDay(day).getTime();
             const dayEnd = endOfDay(day).getTime();
-
             // Find events block that overlap with this day
             const dayBlocks: any[] = [];
             events.forEach(event => {
@@ -552,7 +524,6 @@ const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
                         : ((event.teamA && event.teamB) ? `${event.teamA.substring(0, 3).toUpperCase()} vs ${event.teamB.substring(0, 3).toUpperCase()}` : event.title), 
                       event 
                     }];
-
                 blocks.forEach(block => {
                   if (block.start <= dayEnd && block.end >= dayStart) {
                     dayBlocks.push(block);
@@ -594,10 +565,8 @@ const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
                 }
               }
             });
-
             // Sort by start time
             dayBlocks.sort((a, b) => a.start - b.start);
-
             return (
               <div key={day.toISOString()} className={cn(
                 "min-h-[120px] bg-white p-2 flex flex-col gap-1 transition-colors",
@@ -633,7 +602,6 @@ const GanttView = ({ events, onEdit }: { events: BroadcastEvent[], onEdit: (e: B
     </div>
   );
 };
-
 const TIMEZONES = typeof Intl !== 'undefined' && (Intl as any).supportedValuesOf 
   ? (Intl as any).supportedValuesOf('timeZone') as string[]
   : [
@@ -646,7 +614,6 @@ const TIMEZONES = typeof Intl !== 'undefined' && (Intl as any).supportedValuesOf
       "Australia/Sydney",
       "UTC"
     ];
-
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -655,19 +622,16 @@ const fileToBase64 = (file: File): Promise<string> => {
     reader.onerror = error => reject(error);
   });
 };
-
 const CityAutocomplete = ({ value, onChange }: { value: string, onChange: (city: string, tz: string | null) => void }) => {
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<{place_id: string, description: string, lat: string, lon: string}[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     if (!inputValue || inputValue.length < 3 || !showSuggestions) {
       setSuggestions([]);
       return;
     }
-
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
@@ -687,10 +651,8 @@ const CityAutocomplete = ({ value, onChange }: { value: string, onChange: (city:
         setLoading(false);
       }
     }, 500);
-
     return () => clearTimeout(timer);
   }, [inputValue, showSuggestions]);
-
   const handleSelect = (item: {description: string, lat: string, lon: string}) => {
     setInputValue(item.description);
     setShowSuggestions(false);
@@ -703,7 +665,6 @@ const CityAutocomplete = ({ value, onChange }: { value: string, onChange: (city:
       onChange(item.description, null);
     }
   };
-
   return (
     <div className="relative">
       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">City</label>
@@ -741,9 +702,6 @@ const CityAutocomplete = ({ value, onChange }: { value: string, onChange: (city:
     </div>
   );
 };
-
-
-
 const EventModal = ({ event, existingSports, allEvents, onClose }: { event: BroadcastEvent | null, existingSports: string[], allEvents: BroadcastEvent[], onClose: () => void }) => {
   const { user, profile } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -765,7 +723,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
   const [availableSystems, setAvailableSystems] = useState<System[]>([]);
   const [availableMachines, setAvailableMachines] = useState<Machine[]>([]);
   const [infrastructure, setInfrastructure] = useState<Infrastructure | null>(null);
-
   useEffect(() => {
     const qSystems = query(collection(db, 'systems'));
     const unsubscribeSystems = onSnapshot(qSystems, (snapshot) => {
@@ -775,7 +732,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'systems');
     });
-
     const qMachines = query(collection(db, 'machines'));
     const unsubscribeMachines = onSnapshot(qMachines, (snapshot) => {
       const fetchedMachines = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Machine));
@@ -797,10 +753,8 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
       unsubscribeInfra();
     };
   }, []);
-
   
   const allSports = Array.from(new Set([...DEFAULT_SPORTS, ...existingSports, ...customSports, ...(event?.sport ? [event.sport] : [])]));
-
   const [formData, setFormData] = useState({
     title: event?.title || '',
     competition: event?.competition || '',
@@ -877,7 +831,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
       endDate: formatInTimeZone(new Date(s.endDate), event?.venueTimezone || 'Europe/Rome', "yyyy-MM-dd'T'HH:mm"),
     })) || [],
   });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -888,11 +841,9 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
         globalA = formData.sessions[0].teamA || '';
         globalB = formData.sessions[0].teamB || '';
       }
-
       const displayTitle = (formData.isSingleMatch && globalA && globalB)
         ? `${globalA} vs ${globalB}`
         : (formData.competition || formData.title || 'Event');
-
       const parsedSessions = formData.sessions?.map(s => ({
         id: s.id,
         title: s.title || '',
@@ -901,7 +852,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
         startDate: fromZonedTime(s.startDate, formData.venueTimezone || 'Europe/Rome').toISOString(),
         endDate: fromZonedTime(s.endDate, formData.venueTimezone || 'Europe/Rome').toISOString(),
       }));
-
       const data = {
         ...formData,
         teamA: globalA,
@@ -914,7 +864,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
         endDate: fromZonedTime(formData.endDate!, formData.venueTimezone || 'Europe/Rome').toISOString(),
         sessions: parsedSessions,
       };
-
       if (event) {
         await updateDoc(doc(db, 'events', event.id), data);
       } else {
@@ -927,7 +876,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
       setLoading(false);
     }
   };
-
   const handleDelete = async () => {
     if (!event) return;
     setLoading(true);
@@ -940,7 +888,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
       setLoading(false);
     }
   };
-
   const handleAddLog = () => {
     if (!newLog.message.trim() || !newLog.date) return;
     const logEntry: EventLog = {
@@ -952,11 +899,9 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
     setLogs([...logs, logEntry]);
     setNewLog({ message: '', actor: 'TGI', date: format(new Date(), 'yyyy-MM-dd') });
   };
-
   const handleRemoveLog = (id: string) => {
     setLogs(logs.filter(l => l.id !== id));
   };
-
   const getActorColor = (actor: LogActor) => {
     switch (actor) {
       case 'TGI': return 'bg-blue-100 text-blue-700 border-blue-200';
@@ -965,7 +910,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
       default: return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
-
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div 
@@ -987,7 +931,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
               )}
             </div>
           </nav>
-
           {/* Scrolling Content Area */}
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <div className="flex-1 overflow-y-auto p-8 space-y-8" style={{ pointerEvents: profile?.role === 'operator' ? 'none' : 'auto' }}>
@@ -1006,7 +949,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   <Plus className="w-5 h-5 rotate-45" />
                 </button>
               </div>
-
               <div className="border-b border-slate-100 pb-6">
                 <div className="flex justify-between items-start">
                   <div>
@@ -1028,17 +970,14 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                     
                     const overlappingEvents = allEvents.filter(e => {
                       if (event && e.id === event.id) return false;
-
                       // Convert current checking times to a list of blocks
                       const currentBlocks = (formData.sessions && formData.sessions.length > 0) 
                         ? formData.sessions.map(s => ({ start: new Date(fromZonedTime(s.startDate, formData.venueTimezone || 'Europe/Rome')).getTime(), end: new Date(fromZonedTime(s.endDate, formData.venueTimezone || 'Europe/Rome')).getTime() }))
                         : [{ start: new Date(fromZonedTime(formData.startDate!, formData.venueTimezone || 'Europe/Rome')).getTime(), end: new Date(fromZonedTime(formData.endDate!, formData.venueTimezone || 'Europe/Rome')).getTime() }];
-
                       // Convert target event times to a list of blocks
                       const targetBlocks = (e.sessions && e.sessions.length > 0)
                         ? e.sessions.map(s => ({ start: new Date(s.startDate).getTime(), end: new Date(s.endDate).getTime() }))
                         : [{ start: new Date(e.startDate).getTime(), end: new Date(e.endDate).getTime() }];
-
                       let isOverlap = false;
                       for (const cur of currentBlocks) {
                         for (const tgt of targetBlocks) {
@@ -1055,7 +994,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       }
                       return false;
                     });
-
                     if (overlappingEvents.length > 0) {
                       return (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3 max-w-sm">
@@ -1074,9 +1012,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   })()}
                 </div>
               </div>
-
               <section id="info" className="space-y-6">
-
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">
               Event Details
             </h3>
@@ -1097,7 +1033,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                     Se non attivata, il calendario mostrerà solo il nome della competizione e la sua intera durata.
                   </p>
                 </div>
-
                 <div className={formData.isSingleMatch ? "md:col-span-1" : "md:col-span-3"}>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Competition</label>
                   <input 
@@ -1132,7 +1067,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   </>
                 )}
               </div>
-
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description (Optional)</label>
                 <input 
@@ -1142,7 +1076,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   placeholder="e.g. Champions League Final 2026"
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Sport</label>
                 {isAddingSport ? (
@@ -1218,7 +1151,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   </div>
                 )}
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Venue (Stadium/Arena)</label>
                 <input 
@@ -1228,7 +1160,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   placeholder="e.g. Wembley Stadium"
                 />
               </div>
-
               <CityAutocomplete 
                 value={formData.city} 
                 onChange={(city, tz) => {
@@ -1239,7 +1170,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   }));
                 }} 
               />
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Start Date (Venue Local Time)</label>
                 <input 
@@ -1256,7 +1186,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   </p>
                 )}
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">End Date (Venue Local Time)</label>
                 <input 
@@ -1274,7 +1203,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                 )}
               </div>
             </div>
-
             {/* Event Sessions (Tournament / Daily Matches) */}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
               <div className="flex items-center justify-between mb-4">
@@ -1298,7 +1226,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   <Plus className="w-4 h-4" /> Add Session
                 </button>
               </div>
-
               {formData.sessions && formData.sessions.length > 0 && (
                 <div className="space-y-3">
                   {formData.sessions.map((session, idx) => (
@@ -1388,7 +1315,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                 </div>
               )}
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Timezone Venue</label>
@@ -1402,7 +1328,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Type</label>
                 <select 
@@ -1414,7 +1339,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   <option value="POC">POC</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Status</label>
                 <select 
@@ -1429,7 +1353,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   <option value="Done">Done</option>
                 </select>
               </div>
-
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Useful Contacts</label>
                 <textarea 
@@ -1439,7 +1362,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   placeholder="Names, emails, phone numbers of contacts..."
                 />
               </div>
-
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description / Notes</label>
                 <textarea 
@@ -1451,13 +1373,11 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
               </div>
             </div>
           </section>
-
           {/* Project Overview / Timeline Section */}
           <section className="space-y-6 pt-6 border-t border-slate-200">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">
               Project Overview / Timeline
             </h3>
-
             <div className="space-y-4">
               {/* Add new log */}
               <div className="flex flex-col sm:flex-row gap-3 items-start bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -1495,14 +1415,12 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   Add Log
                 </button>
               </div>
-
               {/* Timeline Display */}
               {logs.length > 0 ? (
                 <div className="flex overflow-x-auto pb-6 pt-2 px-2 gap-4 snap-x">
                   {logs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()).map((log, index, sortedLogs) => {
                     const prevLog = index > 0 ? sortedLogs[index - 1] : null;
                     const daysElapsed = prevLog ? differenceInDays(new Date(log.timestamp), new Date(prevLog.timestamp)) : 0;
-
                     return (
                       <div key={log.id} className="flex items-center shrink-0 snap-start">
                         {/* Connection Line with Days */}
@@ -1514,7 +1432,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             </span>
                           </div>
                         )}
-
                         {/* Timeline Card */}
                         <div className="w-64 p-4 rounded-xl border border-slate-200 bg-white shadow-sm relative flex flex-col h-full">
                           <button 
@@ -1551,7 +1468,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
               )}
             </div>
           </section>
-
           {/* Hardware & Asset Section */}
           <section id="galleries" className="space-y-6 pt-6 border-t border-slate-200">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
@@ -1627,9 +1543,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       <div className="h-px flex-1 bg-slate-100"></div>
                     </div>
                   )}
-
-
-
                   <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Resolution</label>
@@ -1730,7 +1643,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       </div>
                     </div>
                   </div>
-
                   <div className="space-y-6 pt-4 border-t border-slate-100">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
@@ -1741,7 +1653,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                         <p className="text-xs text-slate-500">Set the operational requirements for the main chain</p>
                       </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Tracking Type</label>
@@ -1773,7 +1684,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                         </div>
                       </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {[
                         { id: 'cameras', label: 'Cameras to Virtualize', icon: Cpu, color: 'text-purple-600', bg: 'bg-purple-50' },
@@ -1830,7 +1740,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       ))}
                     </div>
                   </div>
-
                   <div className="space-y-6 pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200">
                       <div className="flex items-center gap-3">
@@ -1872,7 +1781,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                         />
                       </button>
                     </div>
-
                     {gallery.hasBackup && gallery.backupConfig && (
                       <div className="space-y-6 p-4 border border-blue-100 bg-blue-50/30 rounded-xl">
                         <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
@@ -1934,7 +1842,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             </div>
                           </div>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           {[
                             { id: 'cameras', label: 'Cameras to Virtualize', icon: Cpu, color: 'text-purple-600', bg: 'bg-purple-50' },
@@ -1993,7 +1900,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       </div>
                     )}
                   </div>
-
                   <div className="md:col-span-2">
                     <div className="flex items-center justify-between mb-3">
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">System Recommendation</label>
@@ -2011,10 +1917,8 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                           </div>
                         );
                       }
-
                       const planA = recs[0];
                       const alternatives = recs.slice(1);
-
                       const renderSystemButton = (system: RecSystem, isPlanA?: boolean) => (
                         <button
                           key={system.id}
@@ -2069,7 +1973,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                               )})}
                             </div>
                           )}
-
                           {system.selectedMachines && system.selectedMachines.length > 0 && gallery.systemId === system.id && (
                             <div className={cn(
                               "mt-2 p-2 rounded-lg border w-full flex flex-col gap-1",
@@ -2091,7 +1994,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                     const typeA = typeOrder[a.type as keyof typeof typeOrder] || 4;
                                     const typeB = typeOrder[b.type as keyof typeof typeOrder] || 4;
                                     if (typeA !== typeB) return typeA - typeB;
-
                                     // Inside same type, extract numbers to sort
                                     const numA = parseInt(a.name.replace(/[^0-9]/g, ''), 10) || 0;
                                     const numB = parseInt(b.name.replace(/[^0-9]/g, ''), 10) || 0;
@@ -2112,7 +2014,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                           )}
                         </button>
                       );
-
                       return (
                         <div className="flex flex-col gap-6 w-full mb-4">
                           {/* PLAN A */}
@@ -2129,7 +2030,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                               {renderSystemButton(planA, true)}
                             </div>
                           </div>
-
                           {/* ALTERNATIVES */}
                           {alternatives.length > 0 && (
                             <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
@@ -2145,113 +2045,136 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       );
                     })()}
                   </div>
-                    <div className="space-y-6 pt-4 border-t border-slate-100">
-                      <div className="flex items-center gap-2">
-                        <Box className="w-4 h-4 text-blue-500" />
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Virtual Assets</label>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          'LED', 
-                          'LED-Domination', 
-                          'LED-Jumbo', 
-                          'Carpets', 
-                          'Carpets on Carpets', 
-                          'Center Circle',
-                          'Additional',
-                          'Static Board'
-                        ].map((asset) => {
-                          const isActive = gallery.virtualAssets?.includes(asset);
-                          return (
-                            <button
-                              key={asset}
-                              type="button"
-                              onClick={() => {
-                                const newGalleries = [...formData.galleries];
-                                const currentAssets = newGalleries[gIndex].virtualAssets || [];
-                                if (isActive) {
-                                  newGalleries[gIndex] = {
-                                    ...newGalleries[gIndex],
-                                    virtualAssets: currentAssets.filter(a => a !== asset)
-                                  };
-                                } else {
-                                  newGalleries[gIndex] = {
-                                    ...newGalleries[gIndex],
-                                    virtualAssets: [...currentAssets, asset]
-                                  };
-                                }
-                                setFormData({ ...formData, galleries: newGalleries });
-                              }}
-                              className={cn(
-                                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border",
-                                isActive 
-                                  ? "bg-blue-600 border-blue-600 text-white shadow-sm" 
-                                  : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50"
-                              )}
-                            >
-                              {asset}
-                            </button>
-                          );
-                        })}
+                </div>
+              ))}
+            </div>
 
-                        {/* Custom Assets */}
-                        {gallery.virtualAssets?.filter(a => ![
-                          'LED', 'LED-Domination', 'LED-Jumbo', 'Carpets', 'Carpets on Carpets', 'Center Circle', 'Additional', 'Static Board'
-                        ].includes(a)).map((asset) => (
+            {/* Total Hardware Summary */}
+            <div className="bg-slate-900 text-white p-4 rounded-xl flex items-center justify-between shadow-lg mt-8 mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <LayoutGrid className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <span className="text-sm font-bold uppercase tracking-widest block">Total Hardware Units</span>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Across all galleries</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <p className="text-[10px] text-slate-400 uppercase font-bold">Main</p>
+                  <p className="text-xl font-black text-white">
+                    {formData.galleries.reduce((acc, g) => acc + g.mainConfig.cameras + g.mainConfig.pgms + g.mainConfig.outputs, 0)}
+                  </p>
+                </div>
+                {formData.galleries.some(g => g.hasBackup) && (
+                  <div className="text-center border-l border-white/10 pl-6">
+                    <p className="text-[10px] text-blue-400 uppercase font-bold">Backup</p>
+                    <p className="text-xl font-black text-blue-400">
+                      {formData.galleries.reduce((acc, g) => acc + (g.hasBackup && g.backupConfig ? g.backupConfig.cameras + g.backupConfig.pgms + g.backupConfig.outputs : 0), 0)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SECOND MAP: Virtual Assets and Layout Preview */}
+            <div className="space-y-12">
+              {formData.galleries.map((gallery, gIndex) => (
+                <div key={`${gallery.id}-assets`} className="space-y-6">
+                  {formData.galleries.length > 1 && (
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-px flex-1 bg-slate-100"></div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-3 py-1 bg-white rounded-full border border-slate-100 shadow-sm">
+                        {gallery.name} - Assets
+                      </span>
+                      <div className="h-px flex-1 bg-slate-100"></div>
+                    </div>
+                  )}
+
+                  <div className="space-y-6 pt-4 border-t border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <Box className="w-4 h-4 text-blue-500" />
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Virtual Assets</label>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        'LED', 
+                        'LED-Domination', 
+                        'LED-Jumbo', 
+                        'Carpets', 
+                        'Carpets on Carpets', 
+                        'Center Circle',
+                        'Additional',
+                        'Static Board'
+                      ].map((asset) => {
+                        const isActive = gallery.virtualAssets?.includes(asset);
+                        return (
                           <button
                             key={asset}
                             type="button"
                             onClick={() => {
                               const newGalleries = [...formData.galleries];
                               const currentAssets = newGalleries[gIndex].virtualAssets || [];
-                              newGalleries[gIndex] = {
-                                ...newGalleries[gIndex],
-                                virtualAssets: currentAssets.filter(a => a !== asset)
-                              };
+                              if (isActive) {
+                                newGalleries[gIndex] = {
+                                  ...newGalleries[gIndex],
+                                  virtualAssets: currentAssets.filter(a => a !== asset)
+                                };
+                              } else {
+                                newGalleries[gIndex] = {
+                                  ...newGalleries[gIndex],
+                                  virtualAssets: [...currentAssets, asset]
+                                };
+                              }
                               setFormData({ ...formData, galleries: newGalleries });
                             }}
-                            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border bg-blue-600 border-blue-600 text-white shadow-sm flex items-center gap-2"
+                            className={cn(
+                              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border",
+                              isActive 
+                                ? "bg-blue-600 border-blue-600 text-white shadow-sm" 
+                                : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50"
+                            )}
                           >
                             {asset}
-                            <Minus className="w-3 h-3" />
                           </button>
-                        ))}
+                        );
+                      })}
 
-                        {/* Add Button */}
-                        {addingAssetToGallery === gallery.id ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              autoFocus
-                              type="text"
-                              value={newAssetValue}
-                              onChange={(e) => setNewAssetValue(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  if (newAssetValue.trim()) {
-                                    const newGalleries = [...formData.galleries];
-                                    const currentAssets = newGalleries[gIndex].virtualAssets || [];
-                                    if (!currentAssets.includes(newAssetValue.trim())) {
-                                      newGalleries[gIndex] = {
-                                        ...newGalleries[gIndex],
-                                        virtualAssets: [...currentAssets, newAssetValue.trim()]
-                                      };
-                                      setFormData({ ...formData, galleries: newGalleries });
-                                    }
-                                    setNewAssetValue('');
-                                    setAddingAssetToGallery(null);
-                                  }
-                                } else if (e.key === 'Escape') {
-                                  setAddingAssetToGallery(null);
-                                  setNewAssetValue('');
-                                }
-                              }}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 w-32"
-                              placeholder="Asset name..."
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
+                      {/* Custom Assets */}
+                      {gallery.virtualAssets?.filter(a => ![
+                        'LED', 'LED-Domination', 'LED-Jumbo', 'Carpets', 'Carpets on Carpets', 'Center Circle', 'Additional', 'Static Board'
+                      ].includes(a)).map((asset) => (
+                        <button
+                          key={asset}
+                          type="button"
+                          onClick={() => {
+                            const newGalleries = [...formData.galleries];
+                            const currentAssets = newGalleries[gIndex].virtualAssets || [];
+                            newGalleries[gIndex] = {
+                              ...newGalleries[gIndex],
+                              virtualAssets: currentAssets.filter(a => a !== asset)
+                            };
+                            setFormData({ ...formData, galleries: newGalleries });
+                          }}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border bg-blue-600 border-blue-600 text-white shadow-sm flex items-center gap-2"
+                        >
+                          {asset}
+                          <Minus className="w-3 h-3" />
+                        </button>
+                      ))}
+
+                      {/* Add Button */}
+                      {addingAssetToGallery === gallery.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            autoFocus
+                            type="text"
+                            value={newAssetValue}
+                            onChange={(e) => setNewAssetValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
                                 if (newAssetValue.trim()) {
                                   const newGalleries = [...formData.galleries];
                                   const currentAssets = newGalleries[gIndex].virtualAssets || [];
@@ -2265,140 +2188,136 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                   setNewAssetValue('');
                                   setAddingAssetToGallery(null);
                                 }
-                              }}
-                              className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setAddingAssetToGallery(gallery.id)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-dashed border-slate-300 text-slate-400 hover:border-blue-400 hover:text-blue-500 flex items-center gap-1"
-                          >
-                            <Plus className="w-3 h-3" />
-                            ADD
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Layout Preview Section */}
-                    <div className="space-y-4 pt-6 border-t border-slate-100">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <ImageIcon className="w-4 h-4 text-blue-500" />
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Layout Preview / Disposition</label>
-                        </div>
-                        {gallery.layoutPreview && (
+                              } else if (e.key === 'Escape') {
+                                setAddingAssetToGallery(null);
+                                setNewAssetValue('');
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-300 outline-none focus:ring-2 focus:ring-blue-500 w-32"
+                            placeholder="Asset name..."
+                          />
                           <button
                             type="button"
                             onClick={() => {
-                              const newGalleries = [...formData.galleries];
-                              newGalleries[gIndex] = { ...newGalleries[gIndex], layoutPreview: '' };
-                              setFormData({ ...formData, galleries: newGalleries });
-                            }}
-                            className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1"
-                          >
-                            <X className="w-3 h-3" />
-                            Remove
-                          </button>
-                        )}
-                      </div>
-
-                      {gallery.layoutPreview ? (
-                        <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-video">
-                          <img 
-                            src={gallery.layoutPreview} 
-                            alt="Layout Preview" 
-                            className="w-full h-full object-contain"
-                            referrerPolicy="no-referrer"
-                          />
-                          <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <label className="cursor-pointer bg-white px-4 py-2 rounded-lg text-xs font-bold text-slate-900 shadow-lg flex items-center gap-2 hover:bg-slate-50 transition-colors">
-                              <Upload className="w-4 h-4" />
-                              Change Image
-                              <input 
-                                type="file" 
-                                accept="image/*" 
-                                className="hidden" 
-                                onChange={async (e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    if (file.size > 1024 * 1024) {
-                                      alert("Image too large. Please upload an image smaller than 1MB.");
-                                      return;
-                                    }
-                                    const base64 = await fileToBase64(file);
-                                    const newGalleries = [...formData.galleries];
-                                    newGalleries[gIndex] = { ...newGalleries[gIndex], layoutPreview: base64 };
-                                    setFormData({ ...formData, galleries: newGalleries });
-                                  }
-                                }}
-                              />
-                            </label>
-                          </div>
-                        </div>
-                      ) : (
-                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl hover:bg-slate-50 hover:border-blue-300 transition-all cursor-pointer group">
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <Upload className="w-8 h-8 text-slate-300 group-hover:text-blue-400 mb-2 transition-colors" />
-                            <p className="text-xs font-bold text-slate-400 group-hover:text-blue-500 transition-colors uppercase tracking-widest">Upload Layout Preview</p>
-                            <p className="text-[10px] text-slate-400 mt-1">PNG, JPG up to 1MB</p>
-                          </div>
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                if (file.size > 1024 * 1024) {
-                                  alert("Image too large. Please upload an image smaller than 1MB.");
-                                  return;
-                                }
-                                const base64 = await fileToBase64(file);
+                              if (newAssetValue.trim()) {
                                 const newGalleries = [...formData.galleries];
-                                newGalleries[gIndex] = { ...newGalleries[gIndex], layoutPreview: base64 };
-                                setFormData({ ...formData, galleries: newGalleries });
+                                const currentAssets = newGalleries[gIndex].virtualAssets || [];
+                                if (!currentAssets.includes(newAssetValue.trim())) {
+                                  newGalleries[gIndex] = {
+                                    ...newGalleries[gIndex],
+                                    virtualAssets: [...currentAssets, newAssetValue.trim()]
+                                  };
+                                  setFormData({ ...formData, galleries: newGalleries });
+                                }
+                                setNewAssetValue('');
+                                setAddingAssetToGallery(null);
                               }
                             }}
-                          />
-                        </label>
+                            className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setAddingAssetToGallery(gallery.id)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-dashed border-slate-300 text-slate-400 hover:border-blue-400 hover:text-blue-500 flex items-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" />
+                          ADD
+                        </button>
                       )}
                     </div>
+                  </div>
+
+                  {/* Layout Preview Section */}
+                  <div className="space-y-4 pt-6 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-blue-500" />
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Layout Preview / Disposition</label>
+                      </div>
+                      {gallery.layoutPreview && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newGalleries = [...formData.galleries];
+                            newGalleries[gIndex] = { ...newGalleries[gIndex], layoutPreview: '' };
+                            setFormData({ ...formData, galleries: newGalleries });
+                          }}
+                          className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1"
+                        >
+                          <X className="w-3 h-3" />
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    {gallery.layoutPreview ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-video">
+                        <img 
+                          src={gallery.layoutPreview} 
+                          alt="Layout Preview" 
+                          className="w-full h-full object-contain"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <label className="cursor-pointer bg-white px-4 py-2 rounded-lg text-xs font-bold text-slate-900 shadow-lg flex items-center gap-2 hover:bg-slate-50 transition-colors">
+                            <Upload className="w-4 h-4" />
+                            Change Image
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  if (file.size > 1024 * 1024) {
+                                    alert("Image too large. Please upload an image smaller than 1MB.");
+                                    return;
+                                  }
+                                  const base64 = await fileToBase64(file);
+                                  const newGalleries = [...formData.galleries];
+                                  newGalleries[gIndex] = { ...newGalleries[gIndex], layoutPreview: base64 };
+                                  setFormData({ ...formData, galleries: newGalleries });
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl hover:bg-slate-50 hover:border-blue-300 transition-all cursor-pointer group">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 text-slate-300 group-hover:text-blue-400 mb-2 transition-colors" />
+                          <p className="text-xs font-bold text-slate-400 group-hover:text-blue-500 transition-colors uppercase tracking-widest">Upload Layout Preview</p>
+                          <p className="text-[10px] text-slate-400 mt-1">PNG, JPG up to 1MB</p>
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 1024 * 1024) {
+                                alert("Image too large. Please upload an image smaller than 1MB.");
+                                return;
+                              }
+                              const base64 = await fileToBase64(file);
+                              const newGalleries = [...formData.galleries];
+                              newGalleries[gIndex] = { ...newGalleries[gIndex], layoutPreview: base64 };
+                              setFormData({ ...formData, galleries: newGalleries });
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
                 </div>
               ))}
-
-              {/* Total Hardware Summary */}
-              <div className="bg-slate-900 text-white p-4 rounded-xl flex items-center justify-between shadow-lg mt-8">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/10 rounded-lg">
-                    <LayoutGrid className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold uppercase tracking-widest block">Total Hardware Units</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">Across all galleries</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <p className="text-[10px] text-slate-400 uppercase font-bold">Main</p>
-                    <p className="text-xl font-black text-white">
-                      {formData.galleries.reduce((acc, g) => acc + g.mainConfig.cameras + g.mainConfig.pgms + g.mainConfig.outputs, 0)}
-                    </p>
-                  </div>
-                  {formData.galleries.some(g => g.hasBackup) && (
-                    <div className="text-center border-l border-white/10 pl-6">
-                      <p className="text-[10px] text-blue-400 uppercase font-bold">Backup</p>
-                      <p className="text-xl font-black text-blue-400">
-                        {formData.galleries.reduce((acc, g) => acc + (g.hasBackup && g.backupConfig ? g.backupConfig.cameras + g.backupConfig.pgms + g.backupConfig.outputs : 0), 0)}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+            </div>
               {/* External Links Section */}
               <div className="pt-8 border-t border-slate-200 mt-8">
                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">External Links</h3>
@@ -2421,7 +2340,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   </div>
                 </div>
               </div>
-
               {/* Signals & Transport Section */}
               <div id="signals" className="pt-8 border-t border-slate-200 mt-8 mb-8">
                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -2456,7 +2374,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             </button>
                           </div>
                         </div>
-
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Signal Type</label>
                           <div className="flex bg-slate-200/50 p-1 rounded-lg">
@@ -2475,7 +2392,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             ))}
                           </div>
                         </div>
-
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Color Profile</label>
                           <div className="flex bg-slate-200/50 p-1 rounded-lg">
@@ -2496,7 +2412,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                         </div>
                      </div>
                   </div>
-
                   {/* Transport Type */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -2556,7 +2471,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       </div>
                     </div>
                   </div>
-
                   {/* Standard & Config */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -2580,7 +2494,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       />
                     </div>
                   </div>
-
                   {/* Transport Details */}
                   <div>
                     <div className="flex justify-between items-center mb-3">
@@ -2677,7 +2590,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       </div>
                     )}
                   </div>
-
                   {/* Outputs Section */}
                   <div className="pt-6 border-t border-slate-200">
                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Output Signals</h4>
@@ -2704,7 +2616,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             </button>
                           </div>
                         </div>
-
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Delivery Mode</label>
                           <div className="flex bg-slate-200/50 p-1 rounded-lg">
@@ -2723,7 +2634,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             ))}
                           </div>
                         </div>
-
                         <div>
                           <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Output Transport</h4>
                           <div className="flex flex-wrap gap-2">
@@ -2754,7 +2664,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                         </div>
                      </div>
                   </div>
-
                   {/* General Notes */}
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Transport & Routing Notes</label>
@@ -2766,10 +2675,8 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       placeholder="Note aggiuntive su fibra, satelliti o passaggi intermedi Nimbra..."
                     ></textarea>
                   </div>
-
                 </div>
               </div>
-
               {/* Schedule Section */}
               <div id="schedule" className="pt-8 border-t border-slate-200 mt-8 mb-8">
                 <div className="flex justify-between items-center mb-4">
@@ -2881,7 +2788,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   )}
                 </div>
               </div>
-
               {/* Costs Section */}
              {profile?.role === 'admin' && (
               <div id="costs" className="pt-8 border-t border-slate-200 mt-8 mb-8">
@@ -2957,7 +2863,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                            </button>
                          </div>
                       ))}
-
                       {/* Total Bar */}
                       <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end items-center gap-4">
                         <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Totale Stimato:</span>
@@ -2970,10 +2875,8 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                 </div>
               </div>
              )}
-            </div>
           </section>
           </div>
-
           <div className="shrink-0 border-t border-slate-200 flex justify-between items-center bg-white px-8 py-6 rounded-b-2xl">
             {event && (
               showConfirmDelete ? (
@@ -3064,7 +2967,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                     Export Produzione
                 </button>
               )}
-
               {profile?.role !== 'operator' && (
                 <button 
                   type="submit"
