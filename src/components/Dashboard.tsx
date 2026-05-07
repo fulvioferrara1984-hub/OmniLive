@@ -1460,36 +1460,37 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
 
             <div className="space-y-4">
               {/* Add new log */}
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <input 
-                  type="date"
-                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-auto"
-                  value={newLog.date}
-                  onChange={e => setNewLog({ ...newLog, date: e.target.value })}
-                />
-                <select 
-                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-auto"
-                  value={newLog.actor}
-                  onChange={e => setNewLog({ ...newLog, actor: e.target.value as LogActor })}
-                >
-                  <option value="TGI">TGI</option>
-                  <option value="Connectivity Provider">Connectivity Provider</option>
-                  <option value="Client">Client</option>
-                  <option value="Other">Other</option>
-                </select>
-                <input 
-                  type="text"
+              <div className="flex flex-col sm:flex-row gap-3 items-start bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex flex-col gap-2 w-full sm:w-60 shrink-0">
+                  <input 
+                    type="date"
+                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none w-full"
+                    value={newLog.date}
+                    onChange={e => setNewLog({ ...newLog, date: e.target.value })}
+                  />
+                  <select 
+                    className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none w-full"
+                    value={newLog.actor}
+                    onChange={e => setNewLog({ ...newLog, actor: e.target.value as LogActor })}
+                  >
+                    <option value="TGI">TGI</option>
+                    <option value="Connectivity Provider">Connectivity Provider</option>
+                    <option value="Client">Client</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <textarea 
                   placeholder="Enter a new update..."
-                  className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full"
+                  className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full min-h-[88px] resize-y"
                   value={newLog.message}
                   onChange={e => setNewLog({ ...newLog, message: e.target.value })}
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddLog(); } }}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddLog(); } }}
                 />
                 <button 
                   type="button"
                   onClick={handleAddLog}
                   disabled={!newLog.message.trim()}
-                  className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 disabled:opacity-50 transition-colors w-full sm:w-auto whitespace-nowrap"
+                  className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 disabled:opacity-50 transition-colors w-full sm:w-auto whitespace-nowrap self-stretch sm:self-auto"
                 >
                   Add Log
                 </button>
@@ -1537,7 +1538,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                           <span className="text-xs text-slate-500 font-medium mb-2 block">
                             {format(new Date(log.timestamp), 'dd MMM yyyy')}
                           </span>
-                          <p className="text-sm text-slate-700 flex-1">{log.message}</p>
+                          <p className="text-sm text-slate-700 flex-1 whitespace-pre-wrap overflow-y-auto pr-2 hide-scrollbar">{log.message}</p>
                         </div>
                       </div>
                     );
