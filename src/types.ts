@@ -112,6 +112,7 @@ export interface SignalsTransport {
 
 export interface ScheduleItem {
   id: string;
+  date?: string;
   time: string;
   activity: string;
   notes: string;
