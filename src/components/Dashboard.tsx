@@ -2807,10 +2807,10 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                       <tbody>
                         {[...(formData.schedule || [])].sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time)).map((item) => (
                           <tr key={item.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
-                            <td className="p-2 border-r border-slate-200">
+                            <td className="p-2 border-r border-slate-200 align-top">
                               <input 
                                 type="date"
-                                className="w-full text-xs font-mono bg-transparent border-0 focus:ring-0 px-2 outline-none"
+                                className="w-full text-xs font-mono bg-transparent border-0 focus:ring-0 px-2 outline-none appearance-none"
                                 value={item.date || ''}
                                 onChange={e => {
                                   const newSchedule = [...(formData.schedule || [])];
@@ -2822,10 +2822,10 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                 }}
                               />
                             </td>
-                            <td className="p-2 border-r border-slate-200">
+                            <td className="p-2 border-r border-slate-200 align-top">
                               <input 
                                 type="time"
-                                className="w-full text-xs font-mono bg-transparent border-0 focus:ring-0 px-2 outline-none"
+                                className="w-full text-xs font-mono bg-transparent border-0 focus:ring-0 px-2 outline-none appearance-none"
                                 value={item.time}
                                 onChange={e => {
                                   const newSchedule = [...formData.schedule];
@@ -2837,10 +2837,10 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                 }}
                               />
                             </td>
-                            <td className="p-2 border-r border-slate-200">
+                            <td className="p-2 border-r border-slate-200 align-top">
                               <textarea 
                                 placeholder="Descrizione attività..."
-                                className="w-full text-xs font-medium bg-transparent border-0 focus:ring-0 px-2 outline-none resize-y min-h-[40px]"
+                                className="w-full text-xs font-medium bg-transparent border-0 focus:ring-0 px-2 outline-none resize-y min-h-[60px]"
                                 value={item.activity}
                                 onChange={e => {
                                   const newSchedule = [...formData.schedule];
@@ -2852,10 +2852,10 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                                 }}
                               />
                             </td>
-                            <td className="p-2">
+                            <td className="p-2 align-top">
                               <textarea 
                                 placeholder="Note aggiuntive..."
-                                className="w-full text-xs text-slate-500 bg-transparent border-0 focus:ring-0 px-2 outline-none resize-y min-h-[40px]"
+                                className="w-full text-xs text-slate-500 bg-transparent border-0 focus:ring-0 px-2 outline-none resize-y min-h-[60px]"
                                 value={item.notes}
                                 onChange={e => {
                                   const newSchedule = [...formData.schedule];
