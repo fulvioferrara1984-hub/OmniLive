@@ -151,6 +151,14 @@ export const exportPDF = async (
     return yPos + 10;
   };
 
+  const yThreshold = 260;
+  const checkSpace = (needed: number) => {
+    if (y + needed > yThreshold) {
+      doc.addPage();
+      y = addHeaderPage();
+    }
+  };
+
   let y = addHeaderPage();
 
   // --- BIG TITLE ---
@@ -163,6 +171,7 @@ export const exportPDF = async (
 
   if (!onlyCosts) {
     // --- GENERAL INFO (Using autoTable for nice alignment) ---
+    checkSpace(40);
     y = addSectionTitle('Event Information', y);
     
     autoTable(doc, {
@@ -214,6 +223,7 @@ export const exportPDF = async (
 
     // --- SESSIONS ---
     if (event.sessions && event.sessions.length > 0) {
+      checkSpace(30);
       y = addSectionTitle('Event Sessions / Matches', y);
       
       const sessionsBody = event.sessions.map((s: any) => [
@@ -238,6 +248,7 @@ export const exportPDF = async (
 
     // --- GALLERIES ---
     if (event.galleries && event.galleries.length > 0) {
+      checkSpace(30);
       y = addSectionTitle('Galleries & Configuration', y);
       
       event.galleries.forEach((gallery: Gallery, idx: number) => {
@@ -311,6 +322,7 @@ export const exportPDF = async (
 
     // --- SIGNALS AND TRANSPORT ---
     if (event.signalsTransport) {
+      checkSpace(30);
       y = addSectionTitle('Signals & Transport', y);
       const st = event.signalsTransport;
       
@@ -334,6 +346,7 @@ export const exportPDF = async (
       y = (doc as any).lastAutoTable.finalY + 6;
 
       if (st.transportDetails && st.transportDetails.length > 0) {
+         checkSpace(20);
          const transportBody = st.transportDetails.map(td => [
            String(td.type || ''),
            String(td.primaryInfo || ''),
@@ -358,6 +371,7 @@ export const exportPDF = async (
     }
 
     // --- SCHEDULE ---
+    checkSpace(30);
     y = addSectionTitle('Running Order / Schedule', y);
 
     if (event.schedule && event.schedule.length > 0) {
@@ -393,15 +407,31 @@ export const exportPDF = async (
 
   // Cost Table
   if (includeCosts && role === 'admin') {
+    checkSpace(30);
     y = addSectionTitle('Production Costs', y);
 
     if (event.costs && event.costs.length > 0) {
-      const costsBody = event.costs.map(c => [
-        String(c.description || 'N/A'),
-        `€ ${c.amount ? c.amount.toLocaleString('it-IT', {minimumFractionDigits: 2}) : '0,00'}`
-      ]);
+      const calculateDuration = () => {
+        if (!event.startDate || !event.endDate) return 0;
+        const start = new Date(event.startDate).getTime();
+        const end = new Date(event.endDate).getTime();
+        return Math.max(0, (end - start) / (1000 * 60 * 60));
+      };
+      
+      const durationHours = calculateDuration();
 
-      const total = event.costs.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+      const costsBody = event.costs.map(c => {
+        const rowTotal = c.type === 'Hourly' ? ((c.amount || 0) * durationHours) : (c.amount || 0);
+        return [
+          String(c.description || 'N/A') + (c.type === 'Hourly' ? ` (${c.amount?.toLocaleString('it-IT')} €/h)` : ''),
+          `€ ${rowTotal.toLocaleString('it-IT', {minimumFractionDigits: 2})}`
+        ];
+      });
+
+      const total = event.costs.reduce((acc, curr) => {
+          const rowTotal = curr.type === 'Hourly' ? ((curr.amount || 0) * durationHours) : (curr.amount || 0);
+          return acc + rowTotal;
+      }, 0);
       
       // Add total row at the end
       costsBody.push([
