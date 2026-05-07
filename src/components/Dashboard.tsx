@@ -1068,13 +1068,14 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   </>
                 )}
               </div>
+              {/* Description / Notes */ }
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
-                <input 
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm font-medium"
-                  value={formData.title}
-                  onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. Champions League Final 2026"
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description / Notes</label>
+                <textarea 
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all h-24 resize-none shadow-sm"
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Additional production details..."
                 />
               </div>
               <div>
@@ -1361,15 +1362,6 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                   value={formData.contacts}
                   onChange={e => setFormData({ ...formData, contacts: e.target.value })}
                   placeholder="Names, emails, phone numbers of contacts..."
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description / Notes</label>
-                <textarea 
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all h-24 resize-none shadow-sm"
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Additional production details..."
                 />
               </div>
             </div>
@@ -3051,6 +3043,7 @@ const EventModal = ({ event, existingSports, allEvents, onClose }: { event: Broa
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
+                                console.log("Export button clicked");
                                 import('../lib/pdf-export').then(lib => {
                                     const params = {
                                         includeCosts: opt !== 'No Costs',

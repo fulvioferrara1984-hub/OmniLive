@@ -11,6 +11,7 @@ export const exportPDF = async (
   role: 'admin' | 'production' | 'operator',
   coverImageUrl?: string
 ) => {
+  console.log("exportPDF called for", event.title);
   const doc = new jsPDF();
   
   let headerImageBase64: string | null = null;
